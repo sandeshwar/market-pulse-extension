@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Market Tracker</title>
+    <style>
+        body {
+            width: 300px;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        #sensex-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .last-updated {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .market-selector {
+            margin: 10px 0;
+            padding: 8px;
+            width: 200px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        
+        .error-message {
+            color: #d32f2f;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+
+        .status-line {
+            font-size: 12px;
+            margin: 5px 0;
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        .status-line span {
+            opacity: 0.8;
+        }
+        
+        .status-open {
+            color: #2e7d32;
+        }
+        
+        .status-closed {
+            color: #c62828;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Market Tracker</h1>
+    <select id="market-selector" class="market-selector">
+        <option value="SENSEX">SENSEX (India)</option>
+        <option value="NIFTY50">NIFTY 50 (India)</option>
+        <option value="DJIA">Dow Jones (US)</option>
+        <option value="SNP500">S&P 500 (US)</option>
+        <option value="FTSE">FTSE 100 (UK)</option>
+        <option value="NIKK">Nikkei 225 (Japan)</option>
+    </select>
+    <div id="sensex-value">Loading...</div>
+    <div id="status-line" class="status-line"></div>
+    <button id="refresh-button">Refresh</button>
+    <script type="module" src="popup.js"></script>
+</body>
+
+</html>
