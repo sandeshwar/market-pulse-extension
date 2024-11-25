@@ -8,92 +8,78 @@ const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
 let currentRequest = null;
 
 async function fetchMarketValue(marketKey) {
-    // Generate unique request ID
     const requestId = Date.now();
     currentRequest = requestId;
     
     const market = MARKETS[marketKey];
     const statusElement = document.getElementById('sensex-value');
+    const refreshButton = document.getElementById('refresh-button');
+    const buttonText = refreshButton.querySelector('.button-text');
     const isOpen = updateMarketStatus(market);
     
+    // Remove loading state if it was there from initial load
+    statusElement.classList.remove('fetching');
+    
     // Show cached value first if available
-    const cachedData = cache[marketKey];
+    const cachedData = getCache()[marketKey];
     if (cachedData) {
+        statusElement.classList.remove('no-data');
         statusElement.textContent = `${market.currency}${parseFloat(cachedData.price).toLocaleString('en-IN', {
             maximumFractionDigits: 2
         })}`;
-    } else {
-        statusElement.textContent = 'No data available';
-        // Hide "No data available" after 3 seconds
-        setTimeout(() => {
-            if (statusElement.textContent === 'No data available') {
-                statusElement.textContent = '';
-            }
-        }, 3000);
     }
     
     // Don't fetch if market is closed
     if (!isOpen) {
+        if (!cachedData) {
+            statusElement.classList.add('no-data');
+            statusElement.textContent = 'Market is closed';
+        }
         return;
     }
     
+    refreshButton.disabled = true;
+    refreshButton.classList.add('loading');
+    buttonText.textContent = 'Refreshing...';
+    
     try {
-        statusElement.textContent = 'Fetching...';
         statusElement.classList.add('fetching');
         
         const apiKey = "9T1MJAB2OZ08REYP";
         const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${market.symbol}&apikey=${apiKey}`;
         
         const response = await fetch(url);
-        
-        // Check if this is still the current request
-        if (currentRequest !== requestId) {
-            console.log('Market changed, aborting old request');
-            return;
-        }
-        
         const data = await response.json();
         
+        // Check if this is still the current request
+        if (currentRequest !== requestId) return;
+        
         if (!data || !data['Global Quote'] || !data['Global Quote']['05. price']) {
-            throw new Error('Market data temporarily unavailable');
+            throw new Error('Market data unavailable');
         }
         
         const price = parseFloat(data['Global Quote']['05. price']);
         if (isNaN(price)) {
-            throw new Error('Invalid price data received');
+            throw new Error('Invalid price data');
         }
         
-        // Check again before updating UI
-        if (currentRequest !== requestId) {
-            console.log('Market changed, skipping update');
-            return;
-        }
-        
-        // Cache and display new value
         setCache(marketKey, { price });
-        statusElement.classList.remove('fetching');
+        statusElement.classList.remove('fetching', 'no-data');
         statusElement.textContent = `${market.currency}${price.toLocaleString('en-IN', {
             maximumFractionDigits: 2
         })}`;
     } catch (error) {
+        console.error('Error:', error.message);
         statusElement.classList.remove('fetching');
-        // Only show error if this is still the current request
-        if (currentRequest === requestId) {
-            console.error('Error:', error.message);
-            if (cachedData) {
-                statusElement.textContent = `${market.currency}${parseFloat(cachedData.price).toLocaleString('en-IN', {
-                    maximumFractionDigits: 2
-                })}`;
-            } else {
-                statusElement.textContent = 'No data available';
-                // Hide error message after 3 seconds
-                setTimeout(() => {
-                    if (statusElement.textContent === 'No data available' && currentRequest === requestId) {
-                        statusElement.textContent = '';
-                    }
-                }, 3000);
-            }
+        
+        if (!cachedData) {
+            statusElement.classList.add('no-data');
+            statusElement.textContent = 'Failed to fetch data';
         }
+    } finally {
+        refreshButton.disabled = false;
+        refreshButton.classList.remove('loading');
+        buttonText.textContent = 'Refresh';
     }
 }
 
@@ -118,8 +104,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 60000);
     
-    document.getElementById('refresh-button').addEventListener('click', () => 
-        fetchMarketValue(marketSelector.value));
+    document.getElementById('refresh-button').addEventListener('click', () => {
+        const marketSelector = document.getElementById('market-selector');
+        fetchMarketValue(marketSelector.value);
+    });
 });
 
 // Update DOM content every minute to refresh countdown
