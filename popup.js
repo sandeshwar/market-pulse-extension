@@ -39,6 +39,7 @@ async function fetchMarketValue(marketKey) {
     
     try {
         statusElement.textContent = 'Fetching...';
+        statusElement.classList.add('fetching');
         
         const apiKey = "9T1MJAB2OZ08REYP";
         const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${market.symbol}&apikey=${apiKey}`;
@@ -70,10 +71,12 @@ async function fetchMarketValue(marketKey) {
         
         // Cache and display new value
         setCache(marketKey, { price });
+        statusElement.classList.remove('fetching');
         statusElement.textContent = `${market.currency}${price.toLocaleString('en-IN', {
             maximumFractionDigits: 2
         })}`;
     } catch (error) {
+        statusElement.classList.remove('fetching');
         // Only show error if this is still the current request
         if (currentRequest === requestId) {
             console.error('Error:', error.message);

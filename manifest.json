@@ -4,14 +4,18 @@
     "version": "1.0",
     "description": "Displays the latest SENSEX value",
     "action": {
-      "default_popup": "popup.html"
+        "default_popup": "popup.html"
     },
     "host_permissions": [
-      "https://www.alphavantage.co/*"
+        "https://www.alphavantage.co/*"
     ],
     "web_accessible_resources": [{
-      "resources": ["js/*.js"],
-      "matches": ["<all_urls>"]
+        "resources": [
+            "js/config/*",
+            "js/utils/*",
+            "js/*.js"
+        ],
+        "matches": ["<all_urls>"]
     }],
     "content_security_policy": {
         "extension_pages": "script-src 'self'; object-src 'self'"

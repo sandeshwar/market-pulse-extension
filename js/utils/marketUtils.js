@@ -1,4 +1,4 @@
-import { getMarketTime, calculateTimeUntilOpen } from '/js/utils/dateUtils.js';
+import { getMarketTime, calculateTimeUntilOpen } from './dateUtils.js';
 
 export function updateMarketStatus(market) {
     const isOpen = isMarketOpen(market);
