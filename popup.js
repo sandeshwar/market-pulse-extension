@@ -1,6 +1,6 @@
-import { MARKETS } from '/js/config/markets.js';
-import { updateMarketStatus, isMarketOpen } from '/js/utils/marketUtils.js';
-import { getCache, setCache } from '/js/cache.js';
+import { MARKETS } from './js/config/markets.js';
+import { updateMarketStatus, isMarketOpen } from './js/utils/marketUtils.js';
+import { getCache, setCache } from './js/cache.js';
 
 const CACHE_KEY = 'marketCache';
 const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');

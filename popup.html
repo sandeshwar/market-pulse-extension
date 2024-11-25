@@ -3,121 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <title>Market Tracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
-            width: 320px;
-            padding: 24px;
-            font-family: 'Inter', sans-serif;
+            width: 340px;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
             text-align: center;
-            background: #fafafa;
+            background: #1a1f2c;
             margin: 0;
-        }
-
-        h1 {
-            margin: 0 0 20px;
-            font-size: 20px;
-            font-weight: 600;
-            color: #1a1a1a;
+            color: #fff;
         }
 
         .container {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px;
+        }
+
+        h1 {
+            margin: 0 0 24px;
+            font-size: 22px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+            color: #fff;
         }
 
         #sensex-value {
-            font-size: 32px;
-            font-weight: 600;
-            margin: 20px 0;
-            color: #1a1a1a;
+            font-size: 36px;
+            font-weight: 700;
+            margin: 24px 0;
+            color: #4ade80;
             transition: all 0.3s ease;
+            letter-spacing: -0.5px;
         }
 
         #sensex-value.fetching {
-            opacity: 0.5;
+            opacity: 0.6;
         }
 
         .market-selector {
             width: 100%;
             padding: 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
+            border: 1px solid #2d3748;
+            border-radius: 12px;
+            font-family: 'Roboto', sans-serif;
             font-size: 14px;
-            color: #1a1a1a;
-            background: #f8f9fa;
+            color: #fff;
+            background: #2d3748;
             cursor: pointer;
             transition: all 0.2s ease;
             margin-bottom: 16px;
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .market-selector:hover {
-            border-color: #2196f3;
-        }
-
-        .market-selector:focus {
-            outline: none;
-            border-color: #2196f3;
-            box-shadow: 0 0 0 3px rgba(33,150,243,0.1);
+            background: #364154;
+            border-color: #4299e1;
         }
 
         .status-line {
-            font-size: 13px;
+            font-size: 14px;
             margin: 16px 0;
-            color: #666;
-            line-height: 1.5;
+            color: #a0aec0;
+            line-height: 1.6;
         }
 
         .status-open {
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 4px 12px;
-            border-radius: 12px;
+            background: #065f46;
+            color: #4ade80;
+            padding: 6px 16px;
+            border-radius: 24px;
             font-weight: 500;
+            font-size: 13px;
         }
         
         .status-closed {
-            background: #ffebee;
-            color: #c62828;
-            padding: 4px 12px;
-            border-radius: 12px;
+            background: #7f1d1d;
+            color: #fca5a5;
+            padding: 6px 16px;
+            border-radius: 24px;
             font-weight: 500;
+            font-size: 13px;
         }
 
         .countdown {
             display: block;
-            margin-top: 8px;
-            color: #666;
-            font-size: 12px;
+            margin-top: 12px;
+            color: #a0aec0;
+            font-size: 13px;
+            font-weight: 400;
         }
 
         button {
-            background: #2196f3;
+            background: #3b82f6;
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
+            padding: 12px 32px;
+            border-radius: 12px;
+            font-family: 'Roboto', sans-serif;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
-            margin-top: 16px;
-            box-shadow: 0 2px 4px rgba(33,150,243,0.2);
+            margin-top: 20px;
+            width: 100%;
         }
 
         button:hover {
-            background: #1976d2;
+            background: #2563eb;
             transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(33,150,243,0.3);
         }
 
         button:active {
             transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(33,150,243,0.2);
         }
 
         @keyframes pulse {
