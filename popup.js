@@ -41,75 +41,94 @@ async function fetchMarketValue(marketKey) {
     // Remove loading state if it was there from initial load
     statusElement.classList.remove('fetching');
     
-    // Show cached value first if available
-    const cachedData = getCache()[marketKey];
-    if (cachedData?.price) {
-        statusElement.classList.remove('no-data');
-        statusElement.textContent = formatPrice(cachedData.price, market.currency);
-    }
-    
-    // Don't fetch if market is closed
-    if (!isOpen) {
-        if (!cachedData?.price) {
-            statusElement.classList.add('no-data');
-            statusElement.textContent = 'Market is closed';
-        }
-        return;
-    }
-    
-    refreshButton.disabled = true;
-    refreshButton.classList.add('loading');
-    buttonText.textContent = 'Refreshing...';
-    
     try {
+        // Always show loading state when fetching new data
         statusElement.classList.add('fetching');
-        
-        // Using Yahoo Finance API with proper headers
-        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${market.symbol}`;
-        
+        buttonText.textContent = 'Refreshing...';
+        refreshButton.disabled = true;
+
+        // Construct the Yahoo Finance API URL with proper headers and parameters
+        const symbol = market.symbol; // Use the symbol directly from market config
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d&includePrePost=false&events=div%2Csplit`;
+
         const response = await fetch(url, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
                 'User-Agent': 'Mozilla/5.0',
-            },
-            mode: 'cors',
-            credentials: 'omit'
+            }
         });
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        
-        // Check if this is still the current request
-        if (currentRequest !== requestId) return;
-        
-        if (!data?.chart?.result?.[0]?.meta?.regularMarketPrice) {
-            throw new Error('Market data unavailable');
+        if (!data?.chart?.result?.[0]?.meta) {
+            throw new Error('Invalid data format');
         }
+
+        const result = data.chart.result[0];
+        const meta = result.meta;
+        const regularMarketPrice = meta.regularMarketPrice;
+        const previousClose = meta.previousClose || meta.chartPreviousClose;
+        const regularMarketTime = meta.regularMarketTime;
         
-        const price = data.chart.result[0].meta.regularMarketPrice;
-        if (isNaN(price)) {
+        // Get either current price or previous close based on market status
+        const price = isOpen ? regularMarketPrice : previousClose;
+        const timestamp = regularMarketTime * 1000; // Convert to milliseconds
+
+        if (typeof price !== 'number') {
             throw new Error('Invalid price data');
         }
-        
-        setCache(marketKey, { price });
+
+        setCache(marketKey, { price, timestamp });
         statusElement.classList.remove('fetching', 'no-data');
-        statusElement.textContent = formatPrice(price, market.currency);
-    } catch (error) {
-        console.error('Error:', error.message);
-        statusElement.classList.remove('fetching');
-        
-        if (!cachedData?.price) {
-            statusElement.classList.add('no-data');
-            statusElement.textContent = 'Failed to fetch data';
+
+        // Display the value with timestamp if market is closed
+        if (!isOpen) {
+            const lastUpdateTime = new Date(timestamp);
+            const timeStr = lastUpdateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const dateStr = lastUpdateTime.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            
+            statusElement.innerHTML = `
+                ${formatPrice(price, market.currency)}
+                <div class="last-update">Last: ${timeStr}, ${dateStr}</div>
+            `;
+            refreshButton.disabled = true;
+            buttonText.textContent = 'Market Closed';
+        } else {
+            statusElement.textContent = formatPrice(price, market.currency);
+            refreshButton.disabled = false;
+            buttonText.textContent = 'Refresh';
         }
-    } finally {
+    } catch (error) {
+        console.error('Error fetching market value:', error);
+        
+        // Try to show cached data if available
+        const cachedData = getCache()[marketKey];
+        if (cachedData?.price) {
+            statusElement.classList.remove('fetching');
+            statusElement.textContent = formatPrice(cachedData.price, market.currency);
+            
+            if (cachedData.timestamp) {
+                const lastUpdateTime = new Date(cachedData.timestamp);
+                const timeStr = lastUpdateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const dateStr = lastUpdateTime.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                
+                statusElement.innerHTML = `
+                    ${formatPrice(cachedData.price, market.currency)}
+                    <div class="last-update">Cached: ${timeStr}, ${dateStr}</div>
+                `;
+            }
+        } else {
+            statusElement.classList.remove('fetching');
+            statusElement.classList.add('no-data');
+            statusElement.textContent = 'Error fetching data';
+        }
+        
         refreshButton.disabled = false;
-        refreshButton.classList.remove('loading');
-        buttonText.textContent = 'Refresh';
+        buttonText.textContent = 'Retry';
     }
 }
 
