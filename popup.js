@@ -184,6 +184,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     initDrag();
     initResize();
 
+    // Initialize settings button
+    document.getElementById('settingsButton').addEventListener('click', () => {
+        chrome.runtime.openOptionsPage();
+    });
+
     // Get enabled markets and create cards
     const marketsGrid = document.querySelector('.markets-grid');
     const enabledMarkets = await getEnabledMarkets();

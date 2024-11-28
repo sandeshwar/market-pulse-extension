@@ -51,23 +51,40 @@
         }
 
         .header {
-            padding: 20px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            -webkit-app-region: drag;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+            cursor: move;
+            position: relative;
         }
 
         .header h1 {
+            margin: 0;
             font-size: 24px;
             font-weight: 600;
-            margin: 0;
-            background: linear-gradient(45deg, #fff, #b8b8b8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            flex-grow: 1;
         }
 
-        .header .controls {
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .settings-icon {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .settings-icon:hover {
+            color: #fff;
+        }
+
+        .controls {
             display: flex;
             gap: 12px;
             -webkit-app-region: no-drag;
@@ -289,13 +306,16 @@
     <div class="container">
         <div class="header" id="drag-handle">
             <h1>Market Pulse</h1>
-            <div class="controls">
-                <button class="refresh-button" id="refresh-button" title="Refresh data">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-                <button class="pin-button" id="pin-button" title="Pin window">
-                    <i class="fas fa-thumbtack"></i>
-                </button>
+            <div class="header-controls">
+                <div class="controls">
+                    <button class="refresh-button" id="refresh-button" title="Refresh data">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="pin-button" id="pin-button" title="Pin window">
+                        <i class="fas fa-thumbtack"></i>
+                    </button>
+                </div>
+                <i class="fas fa-cog settings-icon" id="settingsButton"></i>
             </div>
         </div>
 
