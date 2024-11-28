@@ -1,20 +1,21 @@
-# SENSEX Chrome Extension
+# Market Pulse Chrome Extension
 
-A Chrome extension that displays real-time market values for major stock indices including SENSEX, NIFTY 50, Dow Jones, and more.
+A powerful Chrome extension that provides real-time tracking of global market indices, offering instant access to SENSEX, NIFTY 50, Dow Jones, and other major market indicators.
 
 ## Features
 
 - Real-time market value updates
-- Support for multiple indices:
+- Support for multiple global indices:
   - SENSEX (BSE)
   - NIFTY 50 (NSE)
   - Dow Jones (DJIA)
   - S&P 500
   - FTSE 100
   - Nikkei 225
-- Automatic market status detection
-- Smart caching system
-- Clean and intuitive UI
+- Intelligent market status detection
+- Efficient caching system
+- Modern and intuitive UI
+- Auto-refresh for active markets
 
 ## Installation
 
@@ -25,12 +26,12 @@ A Chrome extension that displays real-time market values for major stock indices
 
 ## Development
 
-The extension is built using vanilla JavaScript and follows Chrome Extension Manifest V3 guidelines.
+Built with modern JavaScript and follows Chrome Extension Manifest V3 guidelines.
 
 ### Project Structure
 
 ```
-SENSEXChromeExt/
+market-pulse/
 ├── manifest.json        # Extension configuration
 ├── popup.html          # Extension popup UI
 ├── popup.js            # Main extension logic
@@ -40,6 +41,22 @@ SENSEXChromeExt/
     └── cache.js        # Caching system
 ```
 
+### Features in Detail
+
+- **Real-time Updates**: Automatic refresh of market values while markets are open
+- **Smart Caching**: Efficient caching system with automatic expiration
+- **Market Status**: Intelligent detection of market hours across different time zones
+- **Error Handling**: Robust error handling with user-friendly messages
+- **Responsive UI**: Clean and responsive interface with loading states
+
 ## Data Source
 
 Market data is fetched from Yahoo Finance API.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+MIT License - feel free to use this code for your own projects.

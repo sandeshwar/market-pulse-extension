@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "SENSEX Tracker",
+    "name": "Market Pulse",
     "version": "1.0",
-    "description": "Displays the latest SENSEX value",
+    "description": "Real-time tracker for global market indices including SENSEX, NIFTY, Dow Jones, and more",
     "action": {
         "default_popup": "popup.html"
     },
