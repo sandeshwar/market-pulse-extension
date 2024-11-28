@@ -6,8 +6,13 @@
     "action": {
         "default_popup": "popup.html"
     },
+    "permissions": [
+        "storage"
+    ],
     "host_permissions": [
-        "https://www.alphavantage.co/*"
+        "https://*.finance.yahoo.com/*",
+        "https://query1.finance.yahoo.com/*",
+        "https://query2.finance.yahoo.com/*"
     ],
     "web_accessible_resources": [{
         "resources": [
@@ -18,6 +23,6 @@
         "matches": ["<all_urls>"]
     }],
     "content_security_policy": {
-        "extension_pages": "script-src 'self'; object-src 'self'"
+        "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://*.finance.yahoo.com https://query*.finance.yahoo.com"
     }
 }

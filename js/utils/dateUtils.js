@@ -1,10 +1,18 @@
 export function getMarketTime(timezone) {
-    return new Date().toLocaleString('en-US', { timeZone: timezone });
+    try {
+        const date = new Date();
+        // Convert to market timezone and return a Date object
+        return new Date(date.toLocaleString('en-US', { timeZone: timezone }));
+    } catch (error) {
+        console.error('Error converting timezone:', error);
+        // Fallback to local time if timezone conversion fails
+        return new Date();
+    }
 }
 
 export function calculateTimeUntilOpen(market) {
     const now = new Date();
-    const marketTime = new Date(getMarketTime(market.timezone));
+    const marketTime = getMarketTime(market.timezone);
     const day = marketTime.getDay();
     const hours = marketTime.getHours();
     const minutes = marketTime.getMinutes();
