@@ -97,10 +97,9 @@ async function updateAllMarkets() {
         }
     }
     
-    // Update button text based on market status
-    const buttonText = refreshButton.querySelector('.button-text');
+    // Update button based on market status
     refreshButton.disabled = !anyMarketOpen;
-    buttonText.textContent = anyMarketOpen ? 'Refresh All' : 'Markets Closed';
+    refreshButton.title = anyMarketOpen ? 'Refresh data' : 'Markets Closed';
 
     // Update all market cards
     const updatePromises = Array.from(marketCards).map(card => updateMarketCard(card));
@@ -213,8 +212,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Handle pin button
     const pinButton = document.getElementById('pin-button');
     pinButton.addEventListener('click', () => {
-        pinButton.classList.toggle('pinned');
+        const isPinned = pinButton.classList.toggle('pinned');
         document.body.classList.toggle('pinned');
+        pinButton.title = isPinned ? 'Unpin window' : 'Pin window';
+        
+        // Rotate icon when pinned
+        const icon = pinButton.querySelector('i');
+        icon.style.transform = isPinned ? 'rotate(-45deg)' : '';
     });
 
     // Handle add market button
