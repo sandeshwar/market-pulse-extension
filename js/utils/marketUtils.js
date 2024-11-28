@@ -1,4 +1,62 @@
 import { getMarketTime } from './dateUtils.js';
+import { MARKETS } from '../config/markets.js';
+
+export async function fetchMarketValue(marketKey) {
+    if (!MARKETS[marketKey]) {
+        console.error(`Invalid market key: ${marketKey}`);
+        return null;
+    }
+
+    const market = MARKETS[marketKey];
+    const isOpen = isMarketOpen(market);
+    
+    try {
+        // Construct the Yahoo Finance API URL
+        const symbol = market.symbol;
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d&includePrePost=false&events=div%2Csplit`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'User-Agent': 'Mozilla/5.0',
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data?.chart?.result?.[0]?.meta) {
+            throw new Error('Invalid data format');
+        }
+
+        const result = data.chart.result[0];
+        const meta = result.meta;
+        const regularMarketPrice = meta.regularMarketPrice;
+        const previousClose = meta.previousClose || meta.chartPreviousClose;
+        const regularMarketTime = meta.regularMarketTime;
+        
+        // Get either current price or previous close based on market status
+        const value = isOpen ? regularMarketPrice : previousClose;
+        const timestamp = regularMarketTime * 1000; // Convert to milliseconds
+
+        if (typeof value !== 'number') {
+            throw new Error('Invalid price data');
+        }
+
+        return {
+            value,
+            previousClose,
+            lastUpdate: timestamp,
+            isOpen
+        };
+    } catch (error) {
+        console.error('Error fetching market value:', error);
+        return null;
+    }
+}
 
 export function updateMarketStatus(market) {
     if (!market) {
@@ -14,15 +72,8 @@ export function updateMarketStatus(market) {
         return isOpen;
     }
 
-    if (isOpen) {
-        statusElement.innerHTML = '<span class="status-open">Market Open</span>';
-    } else {
-        const timeUntilOpen = calculateTimeUntilOpen(market);
-        statusElement.innerHTML = `
-            <span class="status-closed">Market Closed</span><br>
-            <span class="countdown">Opens in: ${timeUntilOpen}</span>
-        `;
-    }
+    // Clear any existing status display
+    statusElement.innerHTML = '';
     
     return isOpen;
 }

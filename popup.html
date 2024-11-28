@@ -2,151 +2,215 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Market Tracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>Market Pulse</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            width: 340px;
-            min-height: 280px;
-            max-height: 280px;
+        * {
+            box-sizing: border-box;
+            margin: 0;
             padding: 0;
-            font-family: 'Roboto', sans-serif;
-            text-align: center;
-            background: #1a1f2c;
+        }
+
+        body {
+            width: 420px;
+            min-height: 500px;
+            max-height: 600px;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom, #1a1f2c, #2a3142);
             margin: 0;
             color: #fff;
             user-select: none;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
-        /* Styles for pinned state */
-        body.pinned {
-            max-height: none;
-            height: 100vh;
-            overflow-y: auto;
+        body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        body::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        body::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
 
         .container {
-            padding: 24px;
-            min-height: 232px;
+            padding: 20px;
+            height: 100%;
             display: flex;
             flex-direction: column;
+            gap: 20px;
         }
 
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 24px;
+            padding: 8px 0;
+            position: relative;
             cursor: move;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                rgba(255,255,255,0) 0%, 
+                rgba(255,255,255,0.1) 50%, 
+                rgba(255,255,255,0) 100%);
         }
 
         .header h1 {
             margin: 0;
-            font-size: 22px;
-            font-weight: 300;
-            letter-spacing: 0.5px;
-            color: #fff;
+            font-size: 20px;
+            font-weight: 600;
+            background: linear-gradient(90deg, #fff, #b4b4b4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
         }
 
         .pin-button {
             background: none;
             border: none;
-            color: #64748b;
+            color: #8892b0;
             cursor: pointer;
             padding: 8px;
-            transition: color 0.3s ease;
-            font-size: 18px;
+            transition: all 0.2s ease;
+            font-size: 16px;
         }
 
         .pin-button:hover {
-            color: #94a3b8;
+            color: #c5cae9;
+            transform: scale(1.1);
         }
 
         .pin-button.pinned {
             color: #4ade80;
         }
 
-        #sensex-value {
-            font-size: 32px;
-            font-weight: bold;
-            margin: 20px 0;
-            color: #4CAF50;
+        .markets-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            padding: 0;
+        }
+
+        .market-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 20px;
             transition: all 0.3s ease;
-            letter-spacing: -0.5px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
 
-        #sensex-value.fetching {
-            opacity: 0.6;
+        .market-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
         }
 
-        #sensex-value.no-data {
-            color: #94a3b8;
-            font-size: 16px;
-            font-weight: 400;
+        .market-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .market-selector {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            background: #2a3142;
-            border: 1px solid #3a4255;
-            color: #fff;
+        .market-card:hover::before {
+            opacity: 1;
+        }
+
+        .market-name {
             font-size: 14px;
-            margin-bottom: 24px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+        }
+
+        .market-value {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .market-value.down {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .market-change {
+            font-size: 12px;
+            font-weight: 500;
+            color: #4ade80;
+        }
+
+        .market-change.negative {
+            color: #ef4444;
+        }
+
+        .market-time {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 8px;
+        }
+
+        .add-market {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        .market-selector:hover {
-            border-color: #4a5265;
+        .add-market:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
-        .market-selector:focus {
-            outline: none;
-            border-color: #4ade80;
-        }
-
-        #status-line {
-            margin-top: auto;
-            font-size: 14px;
-            color: #94a3b8;
-        }
-
-        .status-open {
-            color: #4ade80;
-            font-weight: 500;
-        }
-
-        .status-closed {
-            color: #ff4444;
-            font-weight: 500;
-        }
-
-        .countdown {
-            color: #94a3b8;
-            font-size: 12px;
-            margin-top: 4px;
-        }
-
-        .last-update {
-            font-size: 12px;
-            color: #8a8d93;
-            margin-top: 4px;
-            font-weight: normal;
+        .add-market span {
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.4);
         }
 
         #refresh-button {
-            margin-top: 16px;
-            padding: 8px 16px;
-            border-radius: 6px;
-            background: #2a3142;
-            border: 1px solid #3a4255;
+            margin-top: auto;
+            padding: 12px 20px;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            border: none;
             color: #fff;
             font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -154,11 +218,17 @@
         }
 
         #refresh-button:hover:not(:disabled) {
-            background: #3a4255;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 222, 128, 0.2);
+        }
+
+        #refresh-button:active:not(:disabled) {
+            transform: translateY(0);
         }
 
         #refresh-button:disabled {
-            opacity: 0.6;
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+            opacity: 1;
             cursor: not-allowed;
         }
 
@@ -166,7 +236,7 @@
             display: none;
             width: 16px;
             height: 16px;
-            border: 2px solid #ffffff33;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-top: 2px solid #fff;
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -181,30 +251,18 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Draggable styles */
-        body.pinned {
-            position: fixed;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            border-radius: 12px;
-            overflow: hidden;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .resize-handle {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #4ade80;
-            border-radius: 50%;
-            cursor: se-resize;
-            bottom: 0;
-            right: 0;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        .markets-grid > * {
+            animation: fadeIn 0.3s ease forwards;
         }
 
-        body.pinned .resize-handle {
-            opacity: 1;
-        }
+        .markets-grid > *:nth-child(2) { animation-delay: 0.1s; }
+        .markets-grid > *:nth-child(3) { animation-delay: 0.2s; }
+        .markets-grid > *:nth-child(4) { animation-delay: 0.3s; }
     </style>
 </head>
 <body>
@@ -213,22 +271,43 @@
             <h1>Market Pulse</h1>
             <button class="pin-button" id="pin-button" title="Pin window">📌</button>
         </div>
-        <select id="market-selector" class="market-selector">
-            <option value="SENSEX">SENSEX (India)</option>
-            <option value="NIFTY">NIFTY 50 (India)</option>
-            <option value="DJIA">Dow Jones (US)</option>
-            <option value="SNP500">S&P 500 (US)</option>
-            <option value="FTSE">FTSE 100 (UK)</option>
-            <option value="NIKK">Nikkei 225 (Japan)</option>
-        </select>
-        <div id="sensex-value" class="fetching">Loading...</div>
-        <div id="status-line"></div>
+
+        <div class="markets-grid">
+            <div class="market-card" data-market="SENSEX">
+                <div class="market-name">SENSEX</div>
+                <div class="market-value">Loading...</div>
+                <div class="market-change">--</div>
+                <div class="market-time">Last update: --</div>
+            </div>
+            <div class="market-card" data-market="NIFTY">
+                <div class="market-name">NIFTY 50</div>
+                <div class="market-value">Loading...</div>
+                <div class="market-change">--</div>
+                <div class="market-time">Last update: --</div>
+            </div>
+            <div class="market-card" data-market="DJIA">
+                <div class="market-name">Dow Jones</div>
+                <div class="market-value">Loading...</div>
+                <div class="market-change">--</div>
+                <div class="market-time">Last update: --</div>
+            </div>
+            <div class="market-card" data-market="SNP500">
+                <div class="market-name">S&P 500</div>
+                <div class="market-value">Loading...</div>
+                <div class="market-change">--</div>
+                <div class="market-time">Last update: --</div>
+            </div>
+            <div class="add-market" id="add-market">
+                <span>+</span>
+            </div>
+        </div>
+
         <button id="refresh-button">
             <span class="loading-spinner"></span>
-            <span class="button-text">Refresh</span>
+            <span class="button-text">Refresh All</span>
         </button>
     </div>
-    <div class="resize-handle" id="resize-handle"></div>
+    
     <script type="module" src="popup.js"></script>
 </body>
 </html>
