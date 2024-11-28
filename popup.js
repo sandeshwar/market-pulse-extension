@@ -7,6 +7,29 @@ let startWidth = 0;
 let startHeight = 0;
 let marketData = {};
 
+// Get enabled markets from storage
+async function getEnabledMarkets() {
+    return new Promise((resolve) => {
+        chrome.storage.sync.get(['enabledMarkets'], (result) => {
+            resolve(result.enabledMarkets || ['SENSEX', 'NIFTY']); // Default markets
+        });
+    });
+}
+
+// Create a market card element
+function createMarketCard(marketKey) {
+    const card = document.createElement('div');
+    card.className = 'market-card';
+    card.dataset.market = marketKey;
+    card.innerHTML = `
+        <div class="market-name">${MARKETS[marketKey].name}</div>
+        <div class="market-value">Loading...</div>
+        <div class="market-change">--</div>
+        <div class="market-time">Last update: --</div>
+    `;
+    return card;
+}
+
 async function updateMarketCard(marketCard) {
     const market = marketCard.dataset.market;
     const valueElement = marketCard.querySelector('.market-value');
@@ -157,10 +180,31 @@ function stopResize() {
 }
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Initialize drag and resize
     initDrag();
     initResize();
+
+    // Get enabled markets and create cards
+    const marketsGrid = document.querySelector('.markets-grid');
+    const enabledMarkets = await getEnabledMarkets();
+    
+    // Clear existing cards
+    marketsGrid.innerHTML = '';
+    
+    // Create cards for enabled markets
+    enabledMarkets.forEach(marketKey => {
+        if (MARKETS[marketKey]) {
+            marketsGrid.appendChild(createMarketCard(marketKey));
+        }
+    });
+    
+    // Add the "Add Market" button
+    const addMarketButton = document.createElement('div');
+    addMarketButton.className = 'add-market';
+    addMarketButton.id = 'add-market';
+    addMarketButton.innerHTML = '<span>+</span>';
+    marketsGrid.appendChild(addMarketButton);
 
     // Handle refresh button
     const refreshButton = document.getElementById('refresh-button');
@@ -174,10 +218,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Handle add market button
-    const addMarketButton = document.getElementById('add-market');
-    addMarketButton.addEventListener('click', () => {
-        // TODO: Implement market selection dialog
-        console.log('Add market clicked');
+    const addMarketBtn = document.getElementById('add-market');
+    addMarketBtn.addEventListener('click', () => {
+        window.location.href = 'settings.html';
     });
 
     // Initial update
