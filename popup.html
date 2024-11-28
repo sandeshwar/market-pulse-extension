@@ -8,34 +8,70 @@
         body {
             width: 340px;
             min-height: 280px;
+            max-height: 280px;
             padding: 0;
             font-family: 'Roboto', sans-serif;
             text-align: center;
             background: #1a1f2c;
             margin: 0;
             color: #fff;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        /* Styles for pinned state */
+        body.pinned {
+            max-height: none;
+            height: 100vh;
+            overflow-y: auto;
         }
 
         .container {
             padding: 24px;
-            min-height: 232px; /* 280px - 48px padding */
+            min-height: 232px;
             display: flex;
             flex-direction: column;
         }
 
-        h1 {
-            margin: 0 0 24px;
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            cursor: move;
+        }
+
+        .header h1 {
+            margin: 0;
             font-size: 22px;
             font-weight: 300;
             letter-spacing: 0.5px;
             color: #fff;
         }
 
+        .pin-button {
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            padding: 8px;
+            transition: color 0.3s ease;
+            font-size: 18px;
+        }
+
+        .pin-button:hover {
+            color: #94a3b8;
+        }
+
+        .pin-button.pinned {
+            color: #4ade80;
+        }
+
         #sensex-value {
             font-size: 36px;
             font-weight: 700;
             margin: 24px 0;
-            min-height: 44px; /* Explicit height to prevent shift */
+            min-height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -49,115 +85,92 @@
         }
 
         #sensex-value.no-data {
+            color: #94a3b8;
             font-size: 16px;
-            color: #a0aec0;
             font-weight: 400;
-            opacity: 0.8;
-            letter-spacing: normal;
         }
 
         .market-selector {
             width: 100%;
             padding: 12px;
-            border: 1px solid #2d3748;
-            border-radius: 12px;
-            font-family: 'Roboto', sans-serif;
-            font-size: 14px;
+            border-radius: 8px;
+            background: #2a3142;
+            border: 1px solid #3a4255;
             color: #fff;
-            background: #2d3748;
+            font-size: 14px;
+            margin-bottom: 24px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 16px;
-            -webkit-appearance: none;
-            appearance: none;
+            transition: all 0.3s ease;
         }
 
         .market-selector:hover {
-            background: #364154;
-            border-color: #4299e1;
+            border-color: #4a5265;
         }
 
-        .status-line {
+        .market-selector:focus {
+            outline: none;
+            border-color: #4ade80;
+        }
+
+        #status-line {
+            margin-top: auto;
             font-size: 14px;
-            margin: 16px 0;
-            color: #a0aec0;
-            line-height: 1.6;
-            min-height: 40px; /* Space for two lines of text */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            color: #94a3b8;
         }
 
         .status-open {
-            background: #065f46;
             color: #4ade80;
-            padding: 6px 16px;
-            border-radius: 24px;
             font-weight: 500;
-            font-size: 13px;
         }
-        
+
         .status-closed {
-            background: #7f1d1d;
-            color: #fca5a5;
-            padding: 6px 16px;
-            border-radius: 24px;
+            color: #ef4444;
             font-weight: 500;
-            font-size: 13px;
         }
 
         .countdown {
-            display: block;
-            margin-top: 12px;
-            color: #a0aec0;
-            font-size: 13px;
-            font-weight: 400;
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 4px;
         }
 
-        button {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 12px 32px;
-            border-radius: 12px;
-            font-family: 'Roboto', sans-serif;
+        #refresh-button {
+            margin-top: 16px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            background: #2a3142;
+            border: 1px solid #3a4255;
+            color: #fff;
             font-size: 14px;
-            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: auto;
-            width: 100%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        button:hover {
-            background: #2563eb;
-            transform: translateY(-1px);
+        #refresh-button:hover:not(:disabled) {
+            background: #3a4255;
         }
 
-        button:active {
-            transform: translateY(0);
+        #refresh-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        .fetching {
-            animation: pulse 1.5s infinite;
-        }
-
-        .spinner {
+        .loading-spinner {
+            display: none;
             width: 16px;
             height: 16px;
-            border: 2px solid #ffffff;
-            border-top: 2px solid transparent;
+            border: 2px solid #ffffff33;
+            border-top: 2px solid #fff;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: 8px;
-            display: none;
+            animation: spin 1s linear infinite;
+        }
+
+        #refresh-button.loading .loading-spinner {
+            display: block;
         }
 
         @keyframes spin {
@@ -165,37 +178,54 @@
             100% { transform: rotate(360deg); }
         }
 
-        button.loading .spinner {
-            display: inline-block;
+        /* Draggable styles */
+        body.pinned {
+            position: fixed;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            border-radius: 12px;
+            overflow: hidden;
         }
 
-        button.loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.8;
-            cursor: wait;
+        .resize-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #4ade80;
+            border-radius: 50%;
+            cursor: se-resize;
+            bottom: 0;
+            right: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        body.pinned .resize-handle {
+            opacity: 1;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Market Tracker</h1>
+        <div class="header" id="drag-handle">
+            <h1>Market Pulse</h1>
+            <button class="pin-button" id="pin-button" title="Pin window">📌</button>
+        </div>
         <select id="market-selector" class="market-selector">
             <option value="SENSEX">SENSEX (India)</option>
-            <option value="NIFTY50">NIFTY 50 (India)</option>
+            <option value="NIFTY">NIFTY 50 (India)</option>
             <option value="DJIA">Dow Jones (US)</option>
             <option value="SNP500">S&P 500 (US)</option>
             <option value="FTSE">FTSE 100 (UK)</option>
             <option value="NIKK">Nikkei 225 (Japan)</option>
         </select>
-        <div id="sensex-value">Loading...</div>
-        <div id="status-line" class="status-line"></div>
+        <div id="sensex-value" class="fetching">Loading...</div>
+        <div id="status-line"></div>
         <button id="refresh-button">
-            <span class="spinner"></span>
+            <span class="loading-spinner"></span>
             <span class="button-text">Refresh</span>
         </button>
     </div>
+    <div class="resize-handle" id="resize-handle"></div>
     <script type="module" src="popup.js"></script>
 </body>
 </html>
