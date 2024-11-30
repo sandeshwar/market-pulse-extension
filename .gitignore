@@ -27,3 +27,4 @@ build/
 # Chrome Extension specific
 *.pem
 *.crx
+icon_generator.html
