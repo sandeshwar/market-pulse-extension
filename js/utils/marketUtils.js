@@ -1,7 +1,7 @@
 import { getMarketTime } from './dateUtils.js';
 import { MARKETS } from '../config/markets.js';
 
-export async function fetchMarketValue(marketKey) {
+export async function fetchMarketValue(marketKey, showCurrentPrice = false) {
     if (!MARKETS[marketKey]) {
         console.error(`Invalid market key: ${marketKey}`);
         return null;
@@ -38,8 +38,8 @@ export async function fetchMarketValue(marketKey) {
         const previousClose = meta.previousClose || meta.chartPreviousClose;
         const regularMarketTime = meta.regularMarketTime;
         
-        // Get either current price or previous close based on market status
-        const value = isOpen ? regularMarketPrice : previousClose;
+        // Get price based on user preference and market status
+        const value = showCurrentPrice ? regularMarketPrice : (isOpen ? regularMarketPrice : previousClose);
         const timestamp = regularMarketTime * 1000; // Convert to milliseconds
 
         if (typeof value !== 'number') {
@@ -48,6 +48,7 @@ export async function fetchMarketValue(marketKey) {
 
         return {
             value,
+            currentPrice: regularMarketPrice,
             previousClose,
             lastUpdate: timestamp,
             isOpen

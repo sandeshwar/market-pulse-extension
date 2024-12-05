@@ -6,6 +6,7 @@ let startY = 0;
 let startWidth = 0;
 let startHeight = 0;
 let marketData = {};
+let showCurrentPrice = false;
 
 // Get enabled markets from storage
 async function getEnabledMarkets() {
@@ -38,7 +39,7 @@ async function updateMarketCard(marketCard) {
 
     try {
         valueElement.textContent = 'Loading...';
-        const data = await fetchMarketValue(market);
+        const data = await fetchMarketValue(market, showCurrentPrice);
         
         if (data && data.value) {
             const { value, previousClose, lastUpdate, isOpen } = data;
@@ -59,7 +60,7 @@ async function updateMarketCard(marketCard) {
                 timeElement.textContent += ' (Market Closed)';
             }
             
-            marketData[market] = { value, previousClose, lastUpdate, isOpen };
+            marketData[market] = data;
         }
     } catch (error) {
         console.error(`Error fetching ${market} value:`, error);
@@ -110,6 +111,35 @@ async function updateAllMarkets() {
     // Schedule next update if any market is open
     if (anyMarketOpen) {
         setTimeout(updateAllMarkets, 60000); // Update every minute
+    }
+}
+
+// Load user preferences
+async function loadPreferences() {
+    return new Promise((resolve) => {
+        chrome.storage.sync.get(['showCurrentPrice'], (result) => {
+            showCurrentPrice = result.showCurrentPrice || false;
+            updateToggleButton();
+            resolve();
+        });
+    });
+}
+
+// Save user preferences
+function savePreferences() {
+    chrome.storage.sync.set({ showCurrentPrice });
+}
+
+// Update toggle button appearance
+function updateToggleButton() {
+    const toggleButton = document.getElementById('price-mode-toggle');
+    if (toggleButton) {
+        toggleButton.classList.toggle('active', showCurrentPrice);
+        toggleButton.title = showCurrentPrice ? 
+            'Showing current price (click to show regular market price)' : 
+            'Showing regular market price (click to show current price)';
+        toggleButton.querySelector('i').className = showCurrentPrice ? 
+            'fas fa-chart-line' : 'fas fa-clock';
     }
 }
 
@@ -180,6 +210,8 @@ function stopResize() {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
+    await loadPreferences();
+    
     // Initialize drag and resize
     initDrag();
     initResize();
@@ -230,6 +262,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const addMarketBtn = document.getElementById('add-market');
     addMarketBtn.addEventListener('click', () => {
         window.location.href = 'settings.html';
+    });
+
+    // Handle toggle button click
+    const toggleButton = document.getElementById('price-mode-toggle');
+    toggleButton.addEventListener('click', async () => {
+        showCurrentPrice = !showCurrentPrice;
+        updateToggleButton();
+        savePreferences();
+        updateAllMarkets();
     });
 
     // Initial update
