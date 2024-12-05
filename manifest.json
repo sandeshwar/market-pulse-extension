@@ -19,7 +19,9 @@
     },
     "permissions": [
         "storage",
-        "windows"
+        "windows",
+        "tabs",
+        "activeTab"
     ],
     "host_permissions": [
         "https://*.finance.yahoo.com/*",
