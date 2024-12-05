@@ -26,11 +26,6 @@
             flex-direction: column;
         }
 
-        body.pinned {
-            position: relative;
-            height: 600px;
-        }
-
         body::-webkit-scrollbar {
             width: 8px;
         }
@@ -49,369 +44,158 @@
         }
 
         .container {
-            flex: 1;
-            padding: 20px;
+            padding: 16px;
+            flex-grow: 1;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            min-height: 0;
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px;
-            color: #fff;
-            cursor: move;
-            position: relative;
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            -webkit-app-region: drag;
         }
 
         .header h1 {
             margin: 0;
             font-size: 24px;
             font-weight: 600;
-            flex-grow: 1;
         }
 
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .settings-icon {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 20px;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .settings-icon:hover {
-            color: #fff;
-        }
-
-        .controls {
+        .header-buttons {
             display: flex;
             gap: 12px;
             -webkit-app-region: no-drag;
         }
 
-        .pin-button, .refresh-button {
+        .header-buttons button {
             background: none;
             border: none;
+            color: #fff;
+            opacity: 0.7;
             cursor: pointer;
-            font-size: 16px;
             padding: 8px;
             border-radius: 4px;
             transition: all 0.2s ease;
-            opacity: 0.6;
-            color: #fff;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
         }
 
-        .pin-button::after, .refresh-button::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 60%);
-            transform: translate(-50%, -50%) scale(0);
-            border-radius: 50%;
-            opacity: 0;
-            pointer-events: none;
-            transition: transform 0.4s ease-out, opacity 0.3s ease-out;
-        }
-
-        .pin-button:active::after, .refresh-button:active::after {
-            transform: translate(-50%, -50%) scale(2.5);
-            opacity: 1;
-            transition: transform 0.2s ease-out, opacity 0.15s ease-out;
-        }
-
-        .pin-button i, .refresh-button i {
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .pin-button:active i, .refresh-button:active i {
-            transform: scale(0.85);
-        }
-
-        .pin-button.pinned:active i {
-            transform: scale(0.85) rotate(-45deg);
-        }
-
-        .pin-button:hover, .refresh-button:hover {
+        .header-buttons button:hover {
             opacity: 1;
             background: rgba(255, 255, 255, 0.1);
         }
 
-        .pin-button.pinned {
-            opacity: 1;
-            color: #ffd700;
+        .market-category {
+            margin-bottom: 24px;
         }
 
-        .pin-button.pinned i {
-            transform: rotate(-45deg);
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        .category-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #8f96a3;
+            padding: 8px 0;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .refresh-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .refresh-button.loading i {
-            animation: spin 1s linear infinite;
-        }
-
-        .refresh-button:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .refresh-button:not(:disabled):active {
-            animation: pulse 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .price-mode-toggle {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            padding: 8px;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-            opacity: 0.6;
-            color: #fff;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .price-mode-toggle::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 60%);
-            transform: translate(-50%, -50%) scale(0);
-            border-radius: 50%;
-            opacity: 0;
-            pointer-events: none;
-            transition: transform 0.4s ease-out, opacity 0.3s ease-out;
-        }
-
-        .price-mode-toggle:active::after {
-            transform: translate(-50%, -50%) scale(2.5);
-            opacity: 1;
-            transition: transform 0.2s ease-out, opacity 0.15s ease-out;
-        }
-
-        .price-mode-toggle i {
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .price-mode-toggle:active i {
-            transform: scale(0.85);
-        }
-
-        .price-mode-toggle:hover {
-            opacity: 1;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .markets-grid {
+        .category-content {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            padding: 0;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
         }
 
         .market-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 16px;
-            padding: 20px;
-            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.2s ease;
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .market-card:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
             transform: translateY(-2px);
         }
 
-        .market-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #4ade80, #22c55e);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .market-card:hover::before {
-            opacity: 1;
-        }
-
         .market-name {
-            font-size: 14px;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.7);
+            font-weight: 600;
             margin-bottom: 8px;
+            font-size: 14px;
         }
 
         .market-value {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 700;
-            background: linear-gradient(90deg, #4ade80, #22c55e);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
             margin-bottom: 4px;
         }
 
-        .market-value.down {
-            background: linear-gradient(90deg, #ef4444, #dc2626);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .market-change {
+            font-size: 13px;
+            margin-bottom: 8px;
         }
 
-        .market-change {
-            font-size: 12px;
-            font-weight: 500;
-            color: #4ade80;
+        .market-change.positive {
+            color: #4caf50;
         }
 
         .market-change.negative {
-            color: #ef4444;
+            color: #f44336;
         }
 
         .market-time {
             font-size: 11px;
-            color: rgba(255, 255, 255, 0.4);
-            margin-top: 8px;
+            color: rgba(255, 255, 255, 0.5);
         }
 
-        .add-market {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px dashed rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .price-mode-toggle.active {
+            color: #4caf50;
         }
 
-        .add-market:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.2);
+        #settings-panel {
+            position: absolute;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100%;
+            background: #2a3142;
+            transition: right 0.3s ease;
+            z-index: 1000;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
         }
 
-        .add-market span {
-            font-size: 24px;
-            color: rgba(255, 255, 255, 0.4);
+        #settings-panel.active {
+            right: 0;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .markets-grid > * {
-            animation: fadeIn 0.3s ease forwards;
-        }
-
-        .markets-grid > *:nth-child(2) { animation-delay: 0.1s; }
-        .markets-grid > *:nth-child(3) { animation-delay: 0.2s; }
-        .markets-grid > *:nth-child(4) { animation-delay: 0.3s; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header" id="drag-handle">
             <h1>Market Pulse</h1>
-            <div class="header-controls">
-                <div class="controls">
-                    <button class="price-mode-toggle" id="price-mode-toggle" title="Toggle between current and regular market price">
-                        <i class="fas fa-clock"></i>
-                    </button>
-                    <button class="refresh-button" id="refresh-button" title="Refresh data">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                    <button class="pin-button" id="pin-button" title="Pin window">
-                        <i class="fas fa-thumbtack"></i>
-                    </button>
-                </div>
-                <i class="fas fa-cog settings-icon" id="settingsButton"></i>
+            <div class="header-buttons">
+                <button id="price-mode-toggle" class="price-mode-toggle" title="Toggle between current and closing price">
+                    <i class="fas fa-clock"></i>
+                </button>
+                <button id="pin-button" class="pin-button" title="Pin window">
+                    <i class="fas fa-thumbtack"></i>
+                </button>
+                <button id="settings-button" class="settings-button" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
             </div>
         </div>
-
-        <div class="markets-grid">
-            <div class="market-card" data-market="SENSEX">
-                <div class="market-name">SENSEX</div>
-                <div class="market-value">Loading...</div>
-                <div class="market-change">--</div>
-                <div class="market-time">Last update: --</div>
-            </div>
-            <div class="market-card" data-market="NIFTY">
-                <div class="market-name">NIFTY 50</div>
-                <div class="market-value">Loading...</div>
-                <div class="market-change">--</div>
-                <div class="market-time">Last update: --</div>
-            </div>
-            <div class="market-card" data-market="DJIA">
-                <div class="market-name">Dow Jones</div>
-                <div class="market-value">Loading...</div>
-                <div class="market-change">--</div>
-                <div class="market-time">Last update: --</div>
-            </div>
-            <div class="market-card" data-market="SNP500">
-                <div class="market-name">S&P 500</div>
-                <div class="market-value">Loading...</div>
-                <div class="market-change">--</div>
-                <div class="market-time">Last update: --</div>
-            </div>
-            <div class="add-market" id="add-market">
-                <span>+</span>
-            </div>
+        <div id="market-container">
+            <!-- Market categories will be dynamically inserted here -->
         </div>
     </div>
-    
+    <div id="settings-panel">
+        <!-- Settings panel content will be dynamically inserted -->
+    </div>
     <script type="module" src="popup.js"></script>
 </body>
 </html>

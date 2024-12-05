@@ -1,4 +1,4 @@
-import { MARKETS } from './js/config/markets.js';
+import { MARKETS, MARKET_CATEGORIES } from './js/config/markets.js';
 import { isMarketOpen, fetchMarketValue } from './js/utils/marketUtils.js';
 
 let startX = 0;
@@ -12,7 +12,7 @@ let showCurrentPrice = false;
 async function getEnabledMarkets() {
     return new Promise((resolve) => {
         chrome.storage.sync.get(['enabledMarkets'], (result) => {
-            resolve(result.enabledMarkets || ['SENSEX', 'NIFTY']); // Default markets
+            resolve(result.enabledMarkets || ['SENSEX', 'NIFTY50']); // Default markets
         });
     });
 }
@@ -31,6 +31,36 @@ function createMarketCard(marketKey) {
     return card;
 }
 
+// Create a category section
+function createCategorySection(categoryKey) {
+    const section = document.createElement('div');
+    section.className = 'market-category';
+    section.innerHTML = `
+        <div class="category-header">${MARKET_CATEGORIES[categoryKey]}</div>
+        <div class="category-content" data-category="${categoryKey}"></div>
+    `;
+    return section;
+}
+
+// Organize markets by category
+function organizeMarketsByCategory(enabledMarkets) {
+    const categories = {};
+    
+    enabledMarkets.forEach(marketKey => {
+        const market = MARKETS[marketKey];
+        if (!market) return;
+        
+        const category = market.category;
+        if (!categories[category]) {
+            categories[category] = [];
+        }
+        categories[category].push(marketKey);
+    });
+    
+    return categories;
+}
+
+// Update a market card
 async function updateMarketCard(marketCard) {
     const market = marketCard.dataset.market;
     const valueElement = marketCard.querySelector('.market-value');
@@ -82,36 +112,36 @@ async function updateMarketCard(marketCard) {
     }
 }
 
+// Update all market cards
 async function updateAllMarkets() {
-    const refreshButton = document.getElementById('refresh-button');
-    refreshButton.classList.add('loading');
+    const enabledMarkets = await getEnabledMarkets();
+    const marketContainer = document.getElementById('market-container');
+    marketContainer.innerHTML = '';
+
+    const categorizedMarkets = organizeMarketsByCategory(enabledMarkets);
+    
+    // Sort categories to ensure consistent order
+    const sortedCategories = Object.keys(categorizedMarkets).sort();
     
     // Check if any market is open
-    const marketCards = document.querySelectorAll('.market-card');
-    let anyMarketOpen = false;
+    const anyMarketOpen = enabledMarkets.some(market => 
+        MARKETS[market] && isMarketOpen(MARKETS[market])
+    );
     
-    for (const card of marketCards) {
-        const market = MARKETS[card.dataset.market];
-        if (market && isMarketOpen(market)) {
-            anyMarketOpen = true;
-            break;
-        }
-    }
-    
-    // Update button based on market status
-    refreshButton.disabled = !anyMarketOpen;
-    refreshButton.title = anyMarketOpen ? 'Refresh data' : 'Markets Closed';
-
-    // Update all market cards
-    const updatePromises = Array.from(marketCards).map(card => updateMarketCard(card));
-    await Promise.all(updatePromises);
-    
-    refreshButton.classList.remove('loading');
-    
-    // Schedule next update if any market is open
-    if (anyMarketOpen) {
-        setTimeout(updateAllMarkets, 60000); // Update every minute
-    }
+    sortedCategories.forEach(category => {
+        if (categorizedMarkets[category].length === 0) return;
+        
+        const categorySection = createCategorySection(category);
+        const categoryContent = categorySection.querySelector('.category-content');
+        
+        categorizedMarkets[category].forEach(marketKey => {
+            const card = createMarketCard(marketKey);
+            categoryContent.appendChild(card);
+            updateMarketCard(card);
+        });
+        
+        marketContainer.appendChild(categorySection);
+    });
 }
 
 // Load user preferences
@@ -275,39 +305,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Initialize settings button
-    document.getElementById('settingsButton').addEventListener('click', () => {
+    const settingsButton = document.getElementById('settings-button');
+    settingsButton.addEventListener('click', () => {
         chrome.runtime.openOptionsPage();
-    });
-
-    // Get enabled markets and create cards
-    const marketsGrid = document.querySelector('.markets-grid');
-    const enabledMarkets = await getEnabledMarkets();
-    
-    // Clear existing cards
-    marketsGrid.innerHTML = '';
-    
-    // Create cards for enabled markets
-    enabledMarkets.forEach(marketKey => {
-        if (MARKETS[marketKey]) {
-            marketsGrid.appendChild(createMarketCard(marketKey));
-        }
-    });
-    
-    // Add the "Add Market" button
-    const addMarketButton = document.createElement('div');
-    addMarketButton.className = 'add-market';
-    addMarketButton.id = 'add-market';
-    addMarketButton.innerHTML = '<span>+</span>';
-    marketsGrid.appendChild(addMarketButton);
-
-    // Handle refresh button
-    const refreshButton = document.getElementById('refresh-button');
-    refreshButton.addEventListener('click', updateAllMarkets);
-
-    // Handle add market button
-    const addMarketBtn = document.getElementById('add-market');
-    addMarketBtn.addEventListener('click', () => {
-        window.location.href = 'settings.html';
     });
 
     // Handle toggle button click
@@ -316,9 +316,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         showCurrentPrice = !showCurrentPrice;
         updateToggleButton();
         savePreferences();
-        updateAllMarkets();
+        await updateAllMarkets();
     });
 
     // Initial update
-    updateAllMarkets();
+    await updateAllMarkets();
+    
+    // Set up auto-refresh for open markets
+    setInterval(async () => {
+        const enabledMarkets = await getEnabledMarkets();
+        const anyMarketOpen = Object.keys(MARKETS)
+            .some(market => enabledMarkets.includes(market) && isMarketOpen(MARKETS[market]));
+        
+        if (anyMarketOpen) {
+            await updateAllMarkets();
+        }
+    }, 10000); // Update every 10 seconds if any market is open
 });
