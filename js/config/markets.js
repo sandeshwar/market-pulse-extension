@@ -7,15 +7,7 @@ export const MARKETS = {
         currency: '₹',
         workDays: [1, 2, 3, 4, 5]
     },
-    'NIFTY': {
-        symbol: '^NSEI',
-        name: 'NIFTY 50',
-        timezone: 'Asia/Kolkata',
-        hours: { start: 915, end: 1530 },
-        currency: '₹',
-        workDays: [1, 2, 3, 4, 5]
-    },
-    'NIFTY50': {  // Alias for NIFTY
+    'NIFTY50': {  
         symbol: '^NSEI',
         name: 'NIFTY 50',
         timezone: 'Asia/Kolkata',

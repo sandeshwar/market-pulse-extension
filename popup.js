@@ -146,33 +146,44 @@ function updateToggleButton() {
 // Initialize drag functionality
 function initDrag() {
     const dragHandle = document.getElementById('drag-handle');
-    const body = document.body;
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
 
     dragHandle.addEventListener('mousedown', (e) => {
-        startX = e.clientX;
-        startY = e.clientY;
-        
-        const rect = body.getBoundingClientRect();
-        startWidth = rect.width;
-        startHeight = rect.height;
-
-        document.addEventListener('mousemove', onDrag);
-        document.addEventListener('mouseup', stopDrag);
+        if (document.body.classList.contains('pinned')) {
+            isDragging = true;
+            initialX = e.clientX - currentX;
+            initialY = e.clientY - currentY;
+        }
     });
-}
 
-function onDrag(e) {
-    if (document.body.classList.contains('pinned')) {
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        
-        document.body.style.transform = `translate(${dx}px, ${dy}px)`;
-    }
-}
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            e.preventDefault();
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+            
+            // Ensure window stays within viewport bounds
+            const maxX = window.innerWidth - document.body.offsetWidth;
+            const maxY = window.innerHeight - document.body.offsetHeight;
+            currentX = Math.max(0, Math.min(currentX, maxX));
+            currentY = Math.max(0, Math.min(currentY, maxY));
 
-function stopDrag() {
-    document.removeEventListener('mousemove', onDrag);
-    document.removeEventListener('mouseup', stopDrag);
+            document.body.style.transform = `translate(${currentX}px, ${currentY}px)`;
+            
+            // Save position
+            chrome.storage.sync.set({
+                windowPosition: { x: currentX, y: currentY }
+            });
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
 }
 
 // Initialize resize functionality
@@ -208,6 +219,37 @@ function stopResize() {
     document.removeEventListener('mouseup', stopResize);
 }
 
+// Handle pin button
+const pinButton = document.getElementById('pin-button');
+pinButton.addEventListener('click', () => {
+    const isPinned = pinButton.classList.toggle('pinned');
+    pinButton.title = isPinned ? 'Unpin window' : 'Pin window';
+    
+    // Rotate icon when pinned
+    const icon = pinButton.querySelector('i');
+    icon.style.transform = isPinned ? 'rotate(-45deg)' : '';
+
+    // Send message to background script
+    chrome.runtime.sendMessage({
+        action: isPinned ? 'keepPopupOpen' : 'closePopup'
+    });
+
+    // Close this popup if we're creating a pinned window
+    if (isPinned) {
+        window.close();
+    }
+});
+
+// Check if window was pinned
+chrome.runtime.sendMessage({ action: 'checkPinned' }, (response) => {
+    if (response && response.isPinned) {
+        pinButton.classList.add('pinned');
+        pinButton.title = 'Unpin window';
+        const icon = pinButton.querySelector('i');
+        icon.style.transform = 'rotate(-45deg)';
+    }
+});
+
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
     await loadPreferences();
@@ -215,6 +257,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize drag and resize
     initDrag();
     initResize();
+
+    // Restore window position if pinned
+    chrome.storage.sync.get(['windowState'], (result) => {
+        if (result.windowState) {
+            const { left, top, width, height } = result.windowState;
+            document.body.style.width = `${width}px`;
+            document.body.style.height = `${height}px`;
+            document.body.style.transform = `translate(${left}px, ${top}px)`;
+        }
+    });
 
     // Initialize settings button
     document.getElementById('settingsButton').addEventListener('click', () => {
@@ -245,18 +297,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Handle refresh button
     const refreshButton = document.getElementById('refresh-button');
     refreshButton.addEventListener('click', updateAllMarkets);
-
-    // Handle pin button
-    const pinButton = document.getElementById('pin-button');
-    pinButton.addEventListener('click', () => {
-        const isPinned = pinButton.classList.toggle('pinned');
-        document.body.classList.toggle('pinned');
-        pinButton.title = isPinned ? 'Unpin window' : 'Pin window';
-        
-        // Rotate icon when pinned
-        const icon = pinButton.querySelector('i');
-        icon.style.transform = isPinned ? 'rotate(-45deg)' : '';
-    });
 
     // Handle add market button
     const addMarketBtn = document.getElementById('add-market');
