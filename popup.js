@@ -221,6 +221,21 @@ function stopResize() {
 
 // Handle pin button
 const pinButton = document.getElementById('pin-button');
+
+// Check if we're in a pinned window
+const urlParams = new URLSearchParams(window.location.search);
+const isPinnedWindow = urlParams.get('pinned') === 'true';
+
+// Check initial pin state
+chrome.runtime.sendMessage({ action: 'checkPinned' }, (response) => {
+    if (response && response.isPinned) {
+        pinButton.classList.add('pinned');
+        pinButton.title = 'Unpin window';
+        const icon = pinButton.querySelector('i');
+        icon.style.transform = 'rotate(-45deg)';
+    }
+});
+
 pinButton.addEventListener('click', () => {
     const isPinned = pinButton.classList.toggle('pinned');
     pinButton.title = isPinned ? 'Unpin window' : 'Pin window';
@@ -234,19 +249,10 @@ pinButton.addEventListener('click', () => {
         action: isPinned ? 'keepPopupOpen' : 'closePopup'
     });
 
-    // Close this popup if we're creating a pinned window
-    if (isPinned) {
+    // Only close this popup if we're creating a new pinned window
+    // Don't close if we're in the pinned window and unpinning
+    if (isPinned && !isPinnedWindow) {
         window.close();
-    }
-});
-
-// Check if window was pinned
-chrome.runtime.sendMessage({ action: 'checkPinned' }, (response) => {
-    if (response && response.isPinned) {
-        pinButton.classList.add('pinned');
-        pinButton.title = 'Unpin window';
-        const icon = pinButton.querySelector('i');
-        icon.style.transform = 'rotate(-45deg)';
     }
 });
 

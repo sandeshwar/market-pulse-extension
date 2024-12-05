@@ -21,7 +21,8 @@
         "storage",
         "windows",
         "tabs",
-        "activeTab"
+        "activeTab",
+        "system.display"
     ],
     "host_permissions": [
         "https://*.finance.yahoo.com/*",
