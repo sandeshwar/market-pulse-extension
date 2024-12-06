@@ -20,8 +20,6 @@
     "permissions": [
         "storage",
         "windows",
-        "tabs",
-        "activeTab",
         "system.display"
     ],
     "host_permissions": [
