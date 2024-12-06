@@ -17,7 +17,13 @@ A powerful Chrome extension that provides real-time tracking of global market in
 - Modern and intuitive UI
 - Auto-refresh for active markets
 
-## Installation
+## Get the Extension
+
+[Market Pulse on Chrome Web Store](https://chromewebstore.google.com/detail/market-pulse/kmcdpjbpcmgedcbjboagibnclfooggnf)
+
+
+
+## Installation (for devs)
 
 1. Clone this repository
 2. Open Chrome and navigate to `chrome://extensions/`
@@ -44,7 +50,7 @@ market-pulse/
 ### Features in Detail
 
 - **Real-time Updates**: Automatic refresh of market values while markets are open
-- **Smart Caching**: Efficient caching system with automatic expiration
+<!-- - **Smart Caching**: Efficient caching system with automatic expiration -->
 - **Market Status**: Intelligent detection of market hours across different time zones
 - **Error Handling**: Robust error handling with user-friendly messages
 - **Responsive UI**: Clean and responsive interface with loading states
