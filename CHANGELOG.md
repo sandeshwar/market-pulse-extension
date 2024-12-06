@@ -2,12 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.0.2] - 2024-12-07
+## [1.5.0] - 2024-12-07
 ### Fixed
 - Remove unnecessary tab permissions from manifest
 - Improve pin functionality and market config
 
-## [1.0.1] - 2024-12-06
+## [1.4.0] - 2024-12-06
 ### Added
 - Implement categorized market view
 - Add toggle for current/regular market price display
