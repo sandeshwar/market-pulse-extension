@@ -1,5 +1,6 @@
 import { MARKETS, MARKET_CATEGORIES } from './js/config/markets.js';
 import { isMarketOpen, fetchMarketValue } from './js/utils/marketUtils.js';
+import { WatchlistUI } from './js/components/watchlistUI.js';
 
 let startX = 0;
 let startY = 0;
@@ -286,14 +287,44 @@ pinButton.addEventListener('click', () => {
     }
 });
 
-// Initialize
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadPreferences();
+// Initialize the app
+async function initializeApp() {
+    const enabledMarkets = await getEnabledMarkets();
+    const marketContainer = document.getElementById('market-container');
     
-    // Initialize drag and resize
+    // Initialize watchlist
+    const watchlistRoot = document.getElementById('watchlist-root');
+    const watchlistUI = new WatchlistUI(watchlistRoot);
+    
+    // Organize and display markets
+    const categories = organizeMarketsByCategory(enabledMarkets);
+    Object.entries(categories).forEach(([categoryKey, markets]) => {
+        if (markets.length > 0) {
+            const section = createCategorySection(categoryKey);
+            markets.forEach(marketKey => {
+                const card = createMarketCard(marketKey);
+                section.querySelector('.category-content').appendChild(card);
+            });
+            marketContainer.appendChild(section);
+        }
+    });
+
+    // Update all markets initially
+    await updateAllMarkets();
+    
+    // Initialize other features
     initDrag();
     initResize();
+    loadPreferences();
+    
+    // Set up auto-refresh
+    setInterval(updateAllMarkets, 10000); // Update every 10 seconds
+}
 
+// Initialize
+document.addEventListener('DOMContentLoaded', async () => {
+    await initializeApp();
+    
     // Restore window position if pinned
     chrome.storage.sync.get(['windowState'], (result) => {
         if (result.windowState) {
@@ -318,18 +349,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         savePreferences();
         await updateAllMarkets();
     });
-
-    // Initial update
-    await updateAllMarkets();
-    
-    // Set up auto-refresh for open markets
-    setInterval(async () => {
-        const enabledMarkets = await getEnabledMarkets();
-        const anyMarketOpen = Object.keys(MARKETS)
-            .some(market => enabledMarkets.includes(market) && isMarketOpen(MARKETS[market]));
-        
-        if (anyMarketOpen) {
-            await updateAllMarkets();
-        }
-    }, 10000); // Update every 10 seconds if any market is open
 });

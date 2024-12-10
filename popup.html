@@ -198,6 +198,117 @@
         #settings-panel.active {
             right: 0;
         }
+
+        /* Add watchlist styles */
+        .watchlist-section {
+            margin-top: 16px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .watchlist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .watchlist-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+        }
+
+        .watchlist-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .watchlist-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .watchlist-card h3 {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .watchlist-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .symbols-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .symbol-chip {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+
+        .remove-symbol {
+            background: none;
+            border: none;
+            color: #ff4444;
+            cursor: pointer;
+            padding: 2px;
+            display: flex;
+            align-items: center;
+        }
+
+        .remove-symbol:hover {
+            color: #ff0000;
+        }
+
+        .empty-state, .empty-symbols {
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+            padding: 16px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -219,6 +330,8 @@
         <div id="market-container">
             <!-- Market categories will be dynamically inserted here -->
         </div>
+        <!-- Add watchlist section after existing content -->
+        <div id="watchlist-root"></div>
     </div>
     <div id="settings-panel">
         <!-- Settings panel content will be dynamically inserted -->
