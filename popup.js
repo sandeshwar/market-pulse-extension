@@ -18,6 +18,22 @@ async function getEnabledMarkets() {
     });
 }
 
+// Get primary market from storage
+async function getPrimaryMarket() {
+    return new Promise((resolve) => {
+        chrome.storage.sync.get(['primaryMarket'], (result) => {
+            resolve(result.primaryMarket || '');
+        });
+    });
+}
+
+// Save primary market to storage
+async function savePrimaryMarket(market) {
+    return new Promise((resolve) => {
+        chrome.storage.sync.set({ primaryMarket: market }, resolve);
+    });
+}
+
 // Create a market card element
 function createMarketCard(marketKey) {
     const card = document.createElement('div');
@@ -286,6 +302,51 @@ pinButton.addEventListener('click', () => {
         window.close();
     }
 });
+
+// Initialize settings panel
+async function initializeSettings() {
+    const primaryMarketSelect = document.getElementById('primary-market');
+    const marketToggles = document.getElementById('market-toggles');
+    const enabledMarkets = await getEnabledMarkets();
+    const primaryMarket = await getPrimaryMarket();
+
+    // Populate primary market select
+    Object.entries(MARKETS).forEach(([key, market]) => {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = market.name;
+        option.selected = key === primaryMarket;
+        primaryMarketSelect.appendChild(option);
+    });
+
+    // Create market toggles
+    Object.entries(MARKETS).forEach(([key, market]) => {
+        const toggle = document.createElement('div');
+        toggle.className = 'market-toggle';
+        toggle.innerHTML = `
+            <label class="toggle-label">
+                <input type="checkbox" value="${key}" ${enabledMarkets.includes(key) ? 'checked' : ''}>
+                ${market.name}
+            </label>
+        `;
+        marketToggles.appendChild(toggle);
+    });
+
+    // Handle primary market change
+    primaryMarketSelect.addEventListener('change', async (e) => {
+        await savePrimaryMarket(e.target.value);
+    });
+
+    // Handle market toggles
+    marketToggles.addEventListener('change', async (e) => {
+        if (e.target.type === 'checkbox') {
+            const enabledMarkets = Array.from(marketToggles.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+            await saveEnabledMarkets(enabledMarkets);
+            await updateAllMarkets();
+        }
+    });
+}
 
 // Initialize the app
 async function initializeApp() {

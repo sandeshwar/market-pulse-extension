@@ -309,6 +309,31 @@
             padding: 16px;
             font-size: 14px;
         }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-content {
+            padding: 16px;
+        }
+
+        .settings-section {
+            margin-bottom: 24px;
+        }
+
+        .settings-select {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -334,7 +359,26 @@
         <div id="watchlist-root"></div>
     </div>
     <div id="settings-panel">
-        <!-- Settings panel content will be dynamically inserted -->
+        <div class="settings-header">
+            <h2>Settings</h2>
+            <button id="close-settings" class="btn-icon">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="settings-content">
+            <div class="settings-section">
+                <h3>Primary Market</h3>
+                <select id="primary-market" class="settings-select">
+                    <option value="">Select Primary Market</option>
+                </select>
+            </div>
+            <div class="settings-section">
+                <h3>Markets to Display</h3>
+                <div id="market-toggles" class="market-toggles">
+                    <!-- Market toggles will be added here -->
+                </div>
+            </div>
+        </div>
     </div>
     <script type="module" src="popup.js"></script>
 </body>

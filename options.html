@@ -1,131 +1,166 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Market Pulse Settings</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(to bottom, #1a1f2c, #2a3142);
+            background: #1a1f2c;
             color: #fff;
-            margin: 0;
-            padding: 20px;
+            padding: 32px;
             min-height: 100vh;
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+
         h1 {
-            margin-bottom: 30px;
-            font-weight: 600;
+            font-size: 32px;
+            margin-bottom: 32px;
         }
-        .settings-section {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .market-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 16px;
-            margin-top: 20px;
-        }
-        .market-item {
+
+        .settings-container {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 12px;
+            padding: 24px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .settings-section {
+            margin-bottom: 32px;
+        }
+
+        .settings-section:last-child {
+            margin-bottom: 0;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .market-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
             padding: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
-            gap: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
-        .market-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-1px);
+
+        .market-card:hover {
+            background: rgba(255, 255, 255, 0.15);
         }
-        .market-item.selected {
-            background: rgba(66, 153, 225, 0.15);
-            border-color: rgba(66, 153, 225, 0.5);
+
+        .market-card.selected {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
         }
-        .checkbox {
-            min-width: 18px;
-            min-height: 18px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 4px;
-            position: relative;
-            transition: all 0.2s ease;
-            background: transparent;
-        }
-        .checkbox.checked {
-            background: #4299e1;
-            border-color: #4299e1;
-        }
-        .checkbox.checked::after {
-            content: '';
-            position: absolute;
-            left: 5px;
-            top: 2px;
-            width: 5px;
-            height: 9px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
-        }
+
         .market-info {
             flex-grow: 1;
         }
+
         .market-name {
             font-weight: 500;
             margin-bottom: 4px;
         }
-        .market-details {
-            font-size: 12px;
+
+        .market-location {
+            font-size: 14px;
             color: rgba(255, 255, 255, 0.6);
         }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            margin-left: 16px;
+            accent-color: #4CAF50;
+        }
+
+        .primary-market-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+        }
+
+        .primary-market-select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+            margin-top: 12px;
+        }
+
+        .primary-market-select option {
+            background: #1a1f2c;
+            color: white;
+        }
+
         .save-button {
-            background: #4299e1;
+            background: #4CAF50;
             color: white;
             border: none;
             padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 500;
+            border-radius: 6px;
+            font-size: 16px;
             cursor: pointer;
-            transition: background 0.3s ease;
-            margin-top: 20px;
+            transition: background-color 0.2s;
         }
+
         .save-button:hover {
-            background: #3182ce;
+            background: #45a049;
         }
-        .save-status {
-            margin-top: 12px;
-            color: #48bb78;
-            font-size: 14px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .save-status.visible {
-            opacity: 1;
+
+        .save-button:active {
+            transform: translateY(1px);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Market Pulse Settings</h1>
+    <h1>Market Pulse Settings</h1>
+    <div class="settings-container">
+        <div class="primary-market-section">
+            <h2>Primary Market</h2>
+            <p>Select your primary market. This will be used for watchlist symbols and default views.</p>
+            <select id="primary-market" class="primary-market-select">
+                <option value="">Select Primary Market</option>
+            </select>
+        </div>
+
         <div class="settings-section">
             <h2>Select Markets</h2>
             <p>Choose which markets you want to track in Market Pulse</p>
-            <div class="market-grid" id="marketGrid">
-                <!-- Market items will be dynamically added here -->
+            <div id="market-grid" class="market-grid">
+                <!-- Market cards will be dynamically inserted here -->
             </div>
-            <button class="save-button" id="saveButton">Save Changes</button>
-            <div class="save-status" id="saveStatus">Settings saved successfully!</div>
         </div>
+
+        <button id="save" class="save-button">Save Changes</button>
     </div>
     <script type="module" src="options.js"></script>
 </body>

@@ -2,7 +2,8 @@ export function getMarketTime(timezone) {
     try {
         const date = new Date();
         // Convert to market timezone and return a Date object
-        return new Date(date.toLocaleString('en-US', { timeZone: timezone }));
+        const marketTime = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
+        return marketTime;
     } catch (error) {
         console.error('Error converting timezone:', error);
         // Fallback to local time if timezone conversion fails
@@ -11,7 +12,11 @@ export function getMarketTime(timezone) {
 }
 
 export function calculateTimeUntilOpen(market) {
-    const now = new Date();
+    if (!market.timezone) {
+        console.error('Market timezone not defined:', market.name);
+        return null;
+    }
+
     const marketTime = getMarketTime(market.timezone);
     const day = marketTime.getDay();
     const hours = marketTime.getHours();
@@ -61,4 +66,25 @@ export function formatTimeDifference(ms) {
     if (minutes > 0) parts.push(`${minutes}m`);
     
     return parts.join(' ');
+}
+
+export function isMarketOpen(market) {
+    if (!market.timezone) {
+        console.error('Market timezone not defined:', market.name);
+        return false;
+    }
+
+    const marketTime = getMarketTime(market.timezone);
+    const day = marketTime.getDay();
+    const hours = marketTime.getHours();
+    const minutes = marketTime.getMinutes();
+    const currentTime = hours * 100 + minutes;
+
+    // Check if it's a working day
+    if (!market.workDays.includes(day)) {
+        return false;
+    }
+
+    // Check if within trading hours
+    return currentTime >= market.hours.start && currentTime <= market.hours.end;
 }
