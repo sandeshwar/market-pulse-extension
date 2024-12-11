@@ -16,7 +16,7 @@ export const MARKETS = {
         category: 'INDIAN',
         timezone: 'Asia/Kolkata',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=IN&scrIds=all_stocks_in_bse&start=0&count=100',
+        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/search?q=BSE%3A*&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query&multiQuoteQueryId=multi_quote_single_token_query&enableCb=true&region=IN',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^BSESN'
     },
     'NIFTY50': {
@@ -28,7 +28,7 @@ export const MARKETS = {
         category: 'INDIAN',
         timezone: 'Asia/Kolkata',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=IN&scrIds=nifty50_stocks&start=0&count=50',
+        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/search?q=NSE%3A*&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query&multiQuoteQueryId=multi_quote_single_token_query&enableCb=true&region=IN',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^NSEI'
     },
     'NIKKEI': {
@@ -40,7 +40,7 @@ export const MARKETS = {
         category: 'ASIA',
         timezone: 'Asia/Tokyo',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=JP&scrIds=nikkei225_stocks&start=0&count=225',
+        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/search?q=TSE%3A*&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query&multiQuoteQueryId=multi_quote_single_token_query&enableCb=true&region=JP',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^N225'
     },
     'HANG_SENG': {
@@ -52,7 +52,7 @@ export const MARKETS = {
         category: 'ASIA',
         timezone: 'Asia/Hong_Kong',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=HK&scrIds=hangseng_stocks&start=0&count=50',
+        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/search?q=HKEX%3A*&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query&multiQuoteQueryId=multi_quote_single_token_query&enableCb=true&region=HK',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^HSI'
     },
     'DJIA': {
@@ -64,7 +64,7 @@ export const MARKETS = {
         category: 'US',
         timezone: 'America/New_York',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=US&scrIds=dow_jones_stocks&start=0&count=30',
+        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/search?q=NYSE%3A*&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query&multiQuoteQueryId=multi_quote_single_token_query&enableCb=true&region=US',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^DJI'
     },
     'SNP500': {
@@ -76,7 +76,7 @@ export const MARKETS = {
         category: 'US',
         timezone: 'America/New_York',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=US&scrIds=sp500_stocks&start=0&count=500',
+        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/search?q=SPX%3A*&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query&multiQuoteQueryId=multi_quote_single_token_query&enableCb=true&region=US',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^GSPC'
     },
     'NASDAQ': {
@@ -88,7 +88,7 @@ export const MARKETS = {
         category: 'US',
         timezone: 'America/New_York',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=US&scrIds=nasdaq_stocks&start=0&count=100',
+        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/search?q=NASDAQ%3A*&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query&multiQuoteQueryId=multi_quote_single_token_query&enableCb=true&region=US',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^IXIC'
     },
     'FTSE': {
@@ -100,7 +100,7 @@ export const MARKETS = {
         category: 'EUROPE',
         timezone: 'Europe/London',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=GB&scrIds=ftse100_stocks&start=0&count=100',
+        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/search?q=LSE%3A*&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query&multiQuoteQueryId=multi_quote_single_token_query&enableCb=true&region=GB',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^FTSE'
     },
     'DAX': {
@@ -112,7 +112,7 @@ export const MARKETS = {
         category: 'EUROPE',
         timezone: 'Europe/Berlin',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=DE&scrIds=dax_stocks&start=0&count=40',
+        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/search?q=XETR%3A*&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query&multiQuoteQueryId=multi_quote_single_token_query&enableCb=true&region=DE',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^GDAXI'
     }
 };

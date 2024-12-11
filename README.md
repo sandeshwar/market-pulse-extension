@@ -56,7 +56,7 @@ market-pulse/
 - **Responsive UI**: Clean and responsive interface with loading states
 
 
-## Future Enhancements
+## Work in Progress
 ### Customizable Watchlists
 
 **Description:** Allow users to create and manage personalized watchlists comprising their preferred stocks, indices, or cryptocurrencies.  
@@ -65,6 +65,7 @@ market-pulse/
 
 ---
 
+## Future Enhancements
 ### Real-Time Price Alerts
 
 **Description:** Enable users to set specific price thresholds for assets, receiving notifications when these levels are reached.  

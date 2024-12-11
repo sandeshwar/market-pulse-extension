@@ -319,6 +319,12 @@ async function initializeSettings() {
         primaryMarketSelect.appendChild(option);
     });
 
+    // If no primary market is selected, select the first market by default
+    if (!primaryMarket && primaryMarketSelect.options.length > 1) {
+        primaryMarketSelect.selectedIndex = 1; // Skip the "Select Primary Market" option
+        await savePrimaryMarket(primaryMarketSelect.value);
+    }
+
     // Create market toggles
     Object.entries(MARKETS).forEach(([key, market]) => {
         const toggle = document.createElement('div');
@@ -334,7 +340,14 @@ async function initializeSettings() {
 
     // Handle primary market change
     primaryMarketSelect.addEventListener('change', async (e) => {
-        await savePrimaryMarket(e.target.value);
+        const selectedMarket = e.target.value;
+        await savePrimaryMarket(selectedMarket);
+        // Refresh the watchlist UI to load new symbols
+        const watchlistRoot = document.getElementById('watchlist-root');
+        if (watchlistRoot) {
+            const watchlistUI = new WatchlistUI(watchlistRoot);
+            await watchlistUI.init();
+        }
     });
 
     // Handle market toggles
@@ -350,10 +363,13 @@ async function initializeSettings() {
 
 // Initialize the app
 async function initializeApp() {
+    // Initialize settings first
+    await initializeSettings();
+    
     const enabledMarkets = await getEnabledMarkets();
     const marketContainer = document.getElementById('market-container');
     
-    // Initialize watchlist
+    // Initialize watchlist after settings
     const watchlistRoot = document.getElementById('watchlist-root');
     const watchlistUI = new WatchlistUI(watchlistRoot);
     
