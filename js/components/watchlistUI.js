@@ -16,70 +16,180 @@ export class WatchlistUI {
         this.attachEventDelegation();
     }
 
+    /**
+     * Loads stock symbols for the selected primary market
+     * @returns {Promise<void>}
+     */
     async loadPrimaryMarketSymbols() {
         return new Promise((resolve) => {
-            chrome.storage.sync.get(['primaryMarket'], async (result) => {
-                const primaryMarket = result.primaryMarket;
-                if (!primaryMarket) {
-                    this.symbols = new Set();
-                    resolve();
-                    return;
-                }
-                
-                if (!MARKETS[primaryMarket]) {
-                    console.error('Invalid primary market:', primaryMarket);
-                    this.symbols = new Set();
-                    resolve();
-                    return;
-                }
-
-                try {
-                    console.log('Fetching symbols for market:', primaryMarket);
-                    const response = await fetch(MARKETS[primaryMarket].symbolsUrl);
-                    if (!response.ok) {
-                        throw new Error(`Failed to fetch symbols: ${response.statusText}`);
-                    }
-                    const data = await response.json();
-                    console.log('API Response:', data);
-                    
-                    if (data.quotes && Array.isArray(data.quotes)) {
-                        // Log the types of quotes we're getting
-                        const quoteTypes = new Set(data.quotes.map(q => q.quoteType));
-                        console.log('Quote types in response:', Array.from(quoteTypes));
-                        
-                        // Accept both EQUITY and stocks
-                        this.symbols = new Set(data.quotes
-                            .filter(quote => {
-                                const isValid = quote.symbol && 
-                                    (quote.quoteType === 'EQUITY' || 
-                                     quote.quoteType === 'STOCK' || 
-                                     quote.typeDisp === 'Stock');
-                                return isValid;
-                            })
-                            .map(quote => quote.symbol));
-                        
-                        console.log('Filtered symbols:', Array.from(this.symbols));
-                        
-                        if (this.symbols.size === 0) {
-                            // If no symbols found with strict filtering, try a more lenient approach
-                            this.symbols = new Set(data.quotes
-                                .filter(quote => quote.symbol)
-                                .map(quote => quote.symbol));
-                            
-                            console.log('Lenient filtered symbols:', Array.from(this.symbols));
-                            
-                            if (this.symbols.size === 0) {
-                                throw new Error('No valid stock symbols found in the response');
-                            }
-                        }
-                    } else {
-                        throw new Error('Unexpected response format from Yahoo Finance');
-                    }
-                } catch (error) {
-                    console.error('Error loading symbols:', error);
-                    this.symbols = new Set();
-                }
+            // Ensure we're running in a Chrome extension context
+            if (typeof chrome === 'undefined' || !chrome.storage || !chrome.storage.sync) {
+                console.error('Chrome storage API not available');
+                this.symbols = new Set();
                 resolve();
+                return;
+            }
+
+            chrome.storage.sync.get(['primaryMarket'], async (result) => {
+                try {
+                    // Reset symbols at the start
+                    this.symbols = new Set();
+
+                    const primaryMarket = result?.primaryMarket;
+                    if (!primaryMarket) {
+                        throw new Error('No primary market selected');
+                    }
+
+                    console.log('Loading symbols for primary market:', primaryMarket);
+
+                    const market = MARKETS?.[primaryMarket];
+                    if (!market || !market.symbolsUrl) {
+                        throw new Error(`Invalid market configuration for: ${primaryMarket}`);
+                    }
+
+                    const maxRetries = 2;
+                    const timeout = 10000; // 10 seconds timeout
+                    let retryCount = 0;
+                    let lastError = null;
+
+                    while (retryCount <= maxRetries) {
+                        try {
+                            const url = new URL(market.symbolsUrl);
+                            console.log(`Attempt ${retryCount + 1}: Fetching symbols from URL:`, url.toString());
+
+                            // Create AbortController for timeout
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+                            const response = await fetch(url, {
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'User-Agent': 'Mozilla/5.0',
+                                    'Cache-Control': 'no-cache'
+                                },
+                                signal: controller.signal
+                            });
+
+                            clearTimeout(timeoutId);
+
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+                            }
+
+                            const contentType = response.headers.get('content-type');
+                            if (!contentType || !contentType.includes('application/json')) {
+                                throw new Error(`Invalid content type: ${contentType}`);
+                            }
+
+                            const data = await response.json();
+                            
+                            // Validate response structure using type checking
+                            if (!data || typeof data !== 'object') {
+                                throw new Error('Invalid response: not an object');
+                            }
+                            
+                            if (!data.finance?.result?.[0]?.quotes || !Array.isArray(data.finance.result[0].quotes)) {
+                                throw new Error('Invalid API response structure: missing quotes array');
+                            }
+
+                            const quotes = data.finance.result[0].quotes;
+                            console.log(`Found ${quotes.length} total quotes`);
+
+                            if (quotes.length === 0) {
+                                throw new Error('Empty quotes array received');
+                            }
+
+                            // Filter quotes based on the exchange with strict validation
+                            const filteredSymbols = quotes.filter(quote => {
+                                try {
+                                    if (!quote || typeof quote !== 'object') return false;
+                                    if (!quote.symbol || typeof quote.symbol !== 'string') return false;
+
+                                    const symbol = quote.symbol.trim().toUpperCase();
+                                    if (symbol.length === 0) return false;
+
+                                    switch (primaryMarket) {
+                                        case 'BSE':
+                                            return symbol.endsWith('.BO') && symbol.length > 3;
+                                        case 'NSE':
+                                            return symbol.endsWith('.NS') && symbol.length > 3;
+                                        default:
+                                            return symbol && 
+                                                   quote.typeDisp === 'Equity' && 
+                                                   quote.exchange && 
+                                                   quote.market;
+                                    }
+                                } catch (e) {
+                                    console.warn('Error processing quote:', e);
+                                    return false;
+                                }
+                            });
+
+                            console.log(`Filtered ${filteredSymbols.length} symbols for ${primaryMarket}`);
+
+                            if (filteredSymbols.length === 0) {
+                                throw new Error(`No valid symbols found for market: ${primaryMarket}`);
+                            }
+
+                            // Convert to Set with additional validation
+                            const validSymbols = filteredSymbols
+                                .map(quote => {
+                                    try {
+                                        const symbol = quote.symbol.trim().toUpperCase();
+                                        return symbol.length > 0 ? symbol : null;
+                                    } catch {
+                                        return null;
+                                    }
+                                })
+                                .filter(Boolean);
+
+                            this.symbols = new Set(validSymbols);
+
+                            if (this.symbols.size === 0) {
+                                throw new Error('No valid symbols after final validation');
+                            }
+
+                            console.log(`Final symbol set size: ${this.symbols.size}`);
+                            console.log('Sample symbols:', Array.from(this.symbols).slice(0, 5));
+
+                            // Success - break the retry loop
+                            break;
+
+                        } catch (error) {
+                            lastError = error;
+                            console.error(`Attempt ${retryCount + 1} failed:`, error.message);
+
+                            if (error.name === 'AbortError') {
+                                console.error('Request timed out');
+                            }
+
+                            if (retryCount === maxRetries) {
+                                console.error('All retry attempts failed');
+                                console.error('Final error:', error);
+                                if (error.stack) {
+                                    console.error('Stack trace:', error.stack);
+                                }
+                            } else {
+                                const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
+                                console.log(`Retrying in ${delay}ms... (${maxRetries - retryCount} attempts remaining)`);
+                                await new Promise(r => setTimeout(r, delay));
+                            }
+
+                            retryCount++;
+                        }
+                    }
+
+                    // If we exhausted all retries and still have no symbols, throw the last error
+                    if (this.symbols.size === 0 && lastError) {
+                        throw lastError;
+                    }
+
+                } catch (error) {
+                    console.error('Fatal error in loadPrimaryMarketSymbols:', error);
+                    this.symbols = new Set();
+                } finally {
+                    resolve();
+                }
             });
         });
     }
