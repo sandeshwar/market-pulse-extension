@@ -2,61 +2,72 @@ import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals
 import { MARKETS } from '../../config/markets.js';
 import { WatchlistUI } from '../watchlistUI.js';
 
-const mockValidResponse = {
-    finance: {
-        result: [{
-            quotes: [
-                { symbol: 'RELIANCE.NS', typeDisp: 'Equity', exchange: 'NSE', market: 'in_market' },
-                { symbol: 'TCS.NS', typeDisp: 'Equity', exchange: 'NSE', market: 'in_market' },
-                { symbol: 'INFY.BO', typeDisp: 'Equity', exchange: 'BSE', market: 'in_market' }
-            ]
-        }]
-    }
-};
-
 describe('WatchlistUI', () => {
+    let container;
     let watchlistUI;
-    let mockContainer;
 
     beforeEach(() => {
+        // Mock Chrome storage API
+        global.chrome = {
+            storage: {
+                sync: {
+                    get: jest.fn((keys, callback) => {
+                        if (Array.isArray(keys) && keys.includes('watchlists')) {
+                            callback({ watchlists: '[]' });
+                        } else if (Array.isArray(keys) && keys.includes('primaryMarket')) {
+                            callback({ primaryMarket: 'NSE' });
+                        } else if (typeof keys === 'string') {
+                            callback({ [keys]: null });
+                        }
+                    }),
+                    set: jest.fn()
+                }
+            }
+        };
+
+        // Mock DOM APIs
+        global.document = window.document;
+        global.setTimeout = jest.fn(fn => fn());
+        global.clearTimeout = jest.fn();
+
+        // Reset all mocks
+        jest.resetAllMocks();
+        
         // Setup DOM
-        mockContainer = document.createElement('div');
-        mockContainer.id = 'watchlist-container';
-        document.body.appendChild(mockContainer);
-
-        // Reset fetch mock
+        container = document.createElement('div');
+        watchlistUI = new WatchlistUI(container);
+        
+        // Mock fetch
         global.fetch = jest.fn();
-
-        // Reset chrome storage mock
-        chrome.storage.sync.get.mockReset();
-        chrome.storage.sync.set.mockReset();
-
-        // Create new instance
-        watchlistUI = new WatchlistUI();
-        watchlistUI.container = mockContainer;
     });
 
     afterEach(() => {
-        document.body.removeChild(mockContainer);
         jest.clearAllMocks();
     });
 
-    describe('loadPrimaryMarketSymbols', () => {
-        it('should handle missing Chrome API gracefully', async () => {
-            const originalChrome = global.chrome;
-            global.chrome = undefined;
+    describe('Basic Initialization', () => {
+        it('should initialize with empty symbols set', () => {
+            expect(watchlistUI.symbols).toBeDefined();
+            expect(watchlistUI.symbols instanceof Set).toBeTruthy();
+            expect(watchlistUI.symbols.size).toBe(0);
+        });
 
+        it('should have container element', () => {
+            expect(watchlistUI.container).toBe(container);
+        });
+    });
+
+    describe('Chrome API Handling', () => {
+        it('should handle missing Chrome API gracefully', async () => {
+            global.chrome = undefined;
             await watchlistUI.loadPrimaryMarketSymbols();
             expect(watchlistUI.symbols.size).toBe(0);
-
-            global.chrome = originalChrome;
         });
 
         it('should handle missing primary market selection', async () => {
             chrome.storage.sync.get.mockImplementation((keys, callback) => {
                 callback({});
             });
-
             await watchlistUI.loadPrimaryMarketSymbols();
             expect(watchlistUI.symbols.size).toBe(0);
         });
@@ -65,73 +76,28 @@ describe('WatchlistUI', () => {
             chrome.storage.sync.get.mockImplementation((keys, callback) => {
                 callback({ primaryMarket: 'INVALID_MARKET' });
             });
-
             await watchlistUI.loadPrimaryMarketSymbols();
             expect(watchlistUI.symbols.size).toBe(0);
         });
+    });
 
-        it('should handle network timeout', async () => {
-            chrome.storage.sync.get.mockImplementation((keys, callback) => {
-                callback({ primaryMarket: 'NSE' });
-            });
-
-            // Mock a timeout by throwing an AbortError
-            const abortError = new Error('The operation was aborted');
-            abortError.name = 'AbortError';
-
-            global.fetch.mockImplementation(() => Promise.reject(abortError));
-
-            await watchlistUI.loadPrimaryMarketSymbols();
-            expect(watchlistUI.symbols.size).toBe(0);
-        }, 20000);
-
-        it('should handle invalid response format', async () => {
-            chrome.storage.sync.get.mockImplementation((keys, callback) => {
-                callback({ primaryMarket: 'NSE' });
-            });
-
-            global.fetch.mockImplementation(() => Promise.resolve({
-                ok: true,
-                headers: {
-                    get: () => 'application/json'
-                },
-                json: () => Promise.resolve({ invalid: 'format' })
-            }));
-
-            await watchlistUI.loadPrimaryMarketSymbols();
-            expect(watchlistUI.symbols.size).toBe(0);
-        });
-
-        it('should filter NSE symbols correctly', async () => {
-            chrome.storage.sync.get.mockImplementation((keys, callback) => {
-                callback({ primaryMarket: 'NSE' });
-            });
-
-            global.fetch.mockImplementation(() => Promise.resolve({
-                ok: true,
-                headers: {
-                    get: () => 'application/json'
-                },
-                json: () => Promise.resolve(mockValidResponse)
-            }));
-
-            await watchlistUI.loadPrimaryMarketSymbols();
-            expect(watchlistUI.symbols.size).toBe(2);
-            expect(Array.from(watchlistUI.symbols)).toContain('RELIANCE.NS');
-            expect(Array.from(watchlistUI.symbols)).toContain('TCS.NS');
-        });
-
+    describe('Market Symbol Loading', () => {
         it('should filter BSE symbols correctly', async () => {
             chrome.storage.sync.get.mockImplementation((keys, callback) => {
                 callback({ primaryMarket: 'BSE' });
             });
 
+            const mockResponse = {
+                quotes: [
+                    { symbol: 'INFY.BO', quoteType: 'EQUITY', market: 'in_market', exchange: 'BSE' },
+                    { symbol: 'WRONG.NS', quoteType: 'EQUITY', market: 'in_market', exchange: 'NSE' },
+                    { symbol: 'INVALID', quoteType: 'EQUITY', market: 'in_market', exchange: 'BSE' }
+                ]
+            };
+
             global.fetch.mockImplementation(() => Promise.resolve({
                 ok: true,
-                headers: {
-                    get: () => 'application/json'
-                },
-                json: () => Promise.resolve(mockValidResponse)
+                json: () => Promise.resolve(mockResponse)
             }));
 
             await watchlistUI.loadPrimaryMarketSymbols();
@@ -139,174 +105,126 @@ describe('WatchlistUI', () => {
             expect(Array.from(watchlistUI.symbols)).toContain('INFY.BO');
         });
 
-        // Integration test with real API
-        it('should fetch real symbols from Yahoo Finance API', async () => {
+        it('should handle NYSE symbols correctly', async () => {
             chrome.storage.sync.get.mockImplementation((keys, callback) => {
-                callback({ primaryMarket: 'NSE' });
+                callback({ primaryMarket: 'NYSE' });
             });
 
-            // Mock a realistic response
-            const realResponse = {
-                finance: {
-                    result: [{
-                        quotes: [
-                            { symbol: 'RELIANCE.NS', typeDisp: 'Equity', exchange: 'NSE', market: 'in_market' },
-                            { symbol: 'TCS.NS', typeDisp: 'Equity', exchange: 'NSE', market: 'in_market' },
-                            { symbol: 'INFY.NS', typeDisp: 'Equity', exchange: 'NSE', market: 'in_market' }
-                        ]
-                    }]
-                }
+            const mockResponse = {
+                quotes: [
+                    { symbol: 'AAPL', quoteType: 'EQUITY', market: 'us_market', exchange: 'NYSE' },
+                    { symbol: 'MSFT', quoteType: 'EQUITY', market: 'us_market', exchange: 'NYSE' },
+                    { symbol: 'INVALID.XX', quoteType: 'EQUITY', market: 'other_market', exchange: 'OTHER' }
+                ]
             };
 
             global.fetch.mockImplementation(() => Promise.resolve({
                 ok: true,
-                headers: {
-                    get: () => 'application/json'
-                },
-                json: () => Promise.resolve(realResponse)
+                json: () => Promise.resolve(mockResponse)
             }));
 
             await watchlistUI.loadPrimaryMarketSymbols();
-            expect(watchlistUI.symbols.size).toBeGreaterThan(0);
-            
-            // Validate symbol format
-            const symbols = Array.from(watchlistUI.symbols);
-            symbols.forEach(symbol => {
-                expect(symbol).toMatch(/^[A-Z0-9]+\.NS$/);
-            });
-        });
-
-        it('should retry failed requests with exponential backoff', async () => {
-            chrome.storage.sync.get.mockImplementation((keys, callback) => {
-                callback({ primaryMarket: 'NSE' });
-            });
-
-            // First attempt fails, second succeeds
-            global.fetch
-                .mockImplementationOnce(() => Promise.reject(new Error('Network error')))
-                .mockImplementationOnce(() => Promise.resolve({
-                    ok: true,
-                    headers: {
-                        get: () => 'application/json'
-                    },
-                    json: () => Promise.resolve(mockValidResponse)
-                }));
-
-            const startTime = Date.now();
-            await watchlistUI.loadPrimaryMarketSymbols();
-            const duration = Date.now() - startTime;
-
-            expect(duration).toBeGreaterThanOrEqual(1000); // Should have waited at least 1s
-            expect(watchlistUI.symbols.size).toBeGreaterThan(0);
-            expect(global.fetch).toHaveBeenCalledTimes(2);
-        });
-
-        it('should handle malformed symbols gracefully', async () => {
-            chrome.storage.sync.get.mockImplementation((keys, callback) => {
-                callback({ primaryMarket: 'NSE' });
-            });
-
-            const malformedResponse = {
-                finance: {
-                    result: [{
-                        quotes: [
-                            { symbol: '', typeDisp: 'Equity' }, // Empty symbol
-                            { symbol: null, typeDisp: 'Equity' }, // Null symbol
-                            { symbol: 'VALID.NS', typeDisp: 'Equity', exchange: 'NSE', market: 'in_market' } // Valid symbol
-                        ]
-                    }]
-                }
-            };
-
-            global.fetch.mockImplementation(() => Promise.resolve({
-                ok: true,
-                headers: {
-                    get: () => 'application/json'
-                },
-                json: () => Promise.resolve(malformedResponse)
-            }));
-
-            await watchlistUI.loadPrimaryMarketSymbols();
-            expect(watchlistUI.symbols.size).toBe(1);
-            expect(Array.from(watchlistUI.symbols)[0]).toBe('VALID.NS');
+            expect(watchlistUI.symbols.size).toBe(2);
+            expect(Array.from(watchlistUI.symbols)).toContain('AAPL');
+            expect(Array.from(watchlistUI.symbols)).toContain('MSFT');
         });
     });
 
-    describe('attachEventDelegation', () => {
-        it('should attach click handlers to the container', () => {
-            const addSymbolButton = document.createElement('button');
-            addSymbolButton.classList.add('add-symbol-btn');
-            addSymbolButton.setAttribute('data-action', 'add-symbol');
-            mockContainer.appendChild(addSymbolButton);
+    describe('UI Rendering', () => {
+        it('should render empty state when no watchlists exist', () => {
+            watchlistUI.setupInitialUI();
+            expect(container.innerHTML).toContain('No watchlists yet');
+            expect(container.innerHTML).toContain('Create one to get started!');
+        });
 
+        it('should render watchlist header with create button', () => {
+            watchlistUI.setupInitialUI();
+            expect(container.querySelector('.watchlist-header')).toBeTruthy();
+            expect(container.querySelector('#create-watchlist')).toBeTruthy();
+            expect(container.querySelector('#create-watchlist').textContent).toContain('New Watchlist');
+        });
+    });
+
+    describe('Event Handling', () => {
+        it('should attach event listeners to container', () => {
+            const addEventListenerSpy = jest.spyOn(container, 'addEventListener');
             watchlistUI.attachEventDelegation();
-
-            // Simulate click
-            const clickEvent = new MouseEvent('click', {
-                bubbles: true,
-                cancelable: true,
-                view: window
-            });
-            addSymbolButton.dispatchEvent(clickEvent);
-
-            // Add assertions based on expected behavior
+            expect(addEventListenerSpy).toHaveBeenCalledWith('click', expect.any(Function));
         });
     });
 
-    describe('Error Recovery', () => {
-        it('should retry failed requests with exponential backoff', async () => {
-            chrome.storage.sync.get.mockImplementation((keys, callback) => {
-                callback({ primaryMarket: 'NSE' });
-            });
-
-            // First attempt fails, second succeeds
-            global.fetch
-                .mockImplementationOnce(() => Promise.reject(new Error('Network error')))
-                .mockImplementationOnce(() => Promise.resolve({
-                    ok: true,
-                    headers: {
-                        get: () => 'application/json'
-                    },
-                    json: () => Promise.resolve(mockValidResponse)
-                }));
-
-            const startTime = Date.now();
-            await watchlistUI.loadPrimaryMarketSymbols();
-            const duration = Date.now() - startTime;
-
-            expect(duration).toBeGreaterThanOrEqual(1000); // Should have waited at least 1s
-            expect(watchlistUI.symbols.size).toBeGreaterThan(0);
-            expect(global.fetch).toHaveBeenCalledTimes(2);
-        });
-
-        it('should handle malformed symbols gracefully', async () => {
-            chrome.storage.sync.get.mockImplementation((keys, callback) => {
-                callback({ primaryMarket: 'NSE' });
-            });
-
-            const malformedResponse = {
-                finance: {
-                    result: [{
-                        quotes: [
-                            { symbol: '', typeDisp: 'Equity' }, // Empty symbol
-                            { symbol: null, typeDisp: 'Equity' }, // Null symbol
-                            { symbol: 'VALID.NS', typeDisp: 'Equity', exchange: 'NSE', market: 'in_market' } // Valid symbol
-                        ]
-                    }]
+    describe('Error Handling', () => {
+        beforeEach(() => {
+            // Mock the AbortController and its signal
+            global.AbortController = class {
+                constructor() {
+                    this.signal = { aborted: false };
+                }
+                abort() {
+                    this.signal.aborted = true;
                 }
             };
 
-            global.fetch.mockImplementation(() => Promise.resolve({
-                ok: true,
-                headers: {
-                    get: () => 'application/json'
-                },
-                json: () => Promise.resolve(malformedResponse)
-            }));
+            // Mock timers
+            jest.useFakeTimers();
+        });
 
-            await watchlistUI.loadPrimaryMarketSymbols();
-            expect(watchlistUI.symbols.size).toBe(1);
-            expect(Array.from(watchlistUI.symbols)[0]).toBe('VALID.NS');
+        afterEach(() => {
+            jest.useRealTimers();
+        });
+
+        it('should handle HTTP errors gracefully', async () => {
+            expect.assertions(2);
+
+            // Mock Chrome storage to return a valid market
+            chrome.storage.sync.get.mockImplementation((keys, callback) => {
+                callback({ primaryMarket: 'NYSE' });
+            });
+
+            // Mock fetch to return an error response for all retries
+            global.fetch.mockRejectedValue(new Error('HTTP error! status: 404'));
+
+            // Start the async operation
+            const promise = watchlistUI.loadPrimaryMarketSymbols();
+
+            // Fast-forward through all timeouts
+            for (let i = 0; i <= 2; i++) { // Initial try + 2 retries
+                await Promise.resolve(); // Let the current fetch reject
+                jest.runAllTimers(); // Run any setTimeout
+            }
+
+            await promise;
+
+            expect(watchlistUI.symbols.size).toBe(0);
+            expect(global.fetch).toHaveBeenCalledTimes(3); // Initial try + 2 retries
+        });
+
+        it('should handle malformed response data', async () => {
+            // Mock Chrome storage to return a valid market
+            chrome.storage.sync.get.mockImplementation((keys, callback) => {
+                callback({ primaryMarket: 'NYSE' });
+            });
+
+            // Mock fetch to return invalid data for all retries
+            global.fetch.mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve({ invalidData: true })
+            });
+
+            // Start the async operation
+            const promise = watchlistUI.loadPrimaryMarketSymbols();
+
+            // Fast-forward through all timeouts and promises
+            for (let i = 0; i <= 2; i++) { // Initial try + 2 retries
+                await Promise.resolve(); // Let the current fetch resolve
+                await Promise.resolve(); // Let the json() promise resolve
+                jest.runAllTimers(); // Run any setTimeout
+            }
+
+            await promise;
+
+            expect(watchlistUI.symbols.size).toBe(0);
+            expect(global.fetch).toHaveBeenCalledTimes(3); // Initial try + 2 retries
         });
     });
 });

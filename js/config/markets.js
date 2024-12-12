@@ -17,7 +17,7 @@ export const MARKETS = {
         category: 'INDIAN',
         timezone: 'Asia/Kolkata',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=IN&scrIds=all_stocks_with_earnings_estimates&start=0&count=100',
+        symbolsUrl: 'https://query2.finance.yahoo.com/v1/finance/search?q=SENSEX%20components&quotesCount=30&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^BSESN'
     },
     'NSE': {
@@ -30,7 +30,7 @@ export const MARKETS = {
         category: 'INDIAN',
         timezone: 'Asia/Kolkata',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=IN&scrIds=all_stocks_with_earnings_estimates&start=0&count=100',
+        symbolsUrl: 'https://query2.finance.yahoo.com/v1/finance/search?q=NIFTY%2050%20components&quotesCount=50&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^NSEI'
     },
     'NYSE': {
@@ -43,7 +43,7 @@ export const MARKETS = {
         category: 'US',
         timezone: 'America/New_York',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=US&scrIds=all_stocks_with_earnings_estimates&start=0&count=100',
+        symbolsUrl: 'https://query2.finance.yahoo.com/v1/finance/search?q=NYSE%20listed%20stocks&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^DJI'
     },
     'NASDAQ_EXCHANGE': {
@@ -56,7 +56,7 @@ export const MARKETS = {
         category: 'US',
         timezone: 'America/New_York',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=US&scrIds=all_stocks_with_earnings_estimates&start=0&count=100',
+        symbolsUrl: 'https://query2.finance.yahoo.com/v1/finance/search?q=NASDAQ%20listed%20stocks&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^IXIC'
     },
     'LSE': {
@@ -69,7 +69,7 @@ export const MARKETS = {
         category: 'EUROPE',
         timezone: 'Europe/London',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=GB&scrIds=all_stocks_with_earnings_estimates&start=0&count=100',
+        symbolsUrl: 'https://query2.finance.yahoo.com/v1/finance/search?q=FTSE%20100%20components&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^FTSE'
     },
     'TSE': {
@@ -82,7 +82,7 @@ export const MARKETS = {
         category: 'ASIA',
         timezone: 'Asia/Tokyo',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=JP&scrIds=all_stocks_with_earnings_estimates&start=0&count=100',
+        symbolsUrl: 'https://query2.finance.yahoo.com/v1/finance/search?q=Nikkei%20225%20components&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^N225'
     },
     'HKEX': {
@@ -95,7 +95,7 @@ export const MARKETS = {
         category: 'ASIA',
         timezone: 'Asia/Hong_Kong',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=HK&scrIds=all_stocks_with_earnings_estimates&start=0&count=100',
+        symbolsUrl: 'https://query2.finance.yahoo.com/v1/finance/search?q=Hang%20Seng%20components&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^HSI'
     },
     'DAX': {
@@ -108,7 +108,7 @@ export const MARKETS = {
         category: 'EUROPE',
         timezone: 'Europe/Berlin',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=DE&scrIds=all_stocks_with_earnings_estimates&start=0&count=100',
+        symbolsUrl: 'https://query2.finance.yahoo.com/v1/finance/search?q=DAX%20components&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^GDAXI'
     },
     'SNP500': {
@@ -120,7 +120,7 @@ export const MARKETS = {
         category: 'US',
         timezone: 'America/New_York',
         baseUrl: 'https://query1.finance.yahoo.com/v8/finance',
-        symbolsUrl: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?formatted=true&lang=en-US&region=US&scrIds=all_stocks_with_earnings_estimates&start=0&count=100',
+        symbolsUrl: 'https://query2.finance.yahoo.com/v1/finance/search?q=S%26P%20500%20components&quotesCount=100&newsCount=0&enableFuzzyQuery=false&quotesQueryId=tss_match_phrase_query',
         dataUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/^GSPC'
     }
 };

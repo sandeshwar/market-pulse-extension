@@ -49,104 +49,100 @@ export class WatchlistUI {
 
                     const maxRetries = 2;
                     const timeout = 10000; // 10 seconds timeout
-                    let retryCount = 0;
                     let lastError = null;
 
-                    while (retryCount <= maxRetries) {
+                    for (let retryCount = 0; retryCount <= maxRetries; retryCount++) {
                         try {
-                            const url = new URL(market.symbolsUrl);
-                            console.log(`Attempt ${retryCount + 1}: Fetching symbols from URL:`, url.toString());
-
-                            // Create AbortController for timeout
                             const controller = new AbortController();
                             const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-                            const response = await fetch(url, {
+                            const response = await fetch(market.symbolsUrl, {
+                                signal: controller.signal,
                                 headers: {
-                                    'Accept': 'application/json',
-                                    'User-Agent': 'Mozilla/5.0',
-                                    'Cache-Control': 'no-cache'
-                                },
-                                signal: controller.signal
+                                    'Accept': 'application/json'
+                                }
                             });
 
                             clearTimeout(timeoutId);
 
                             if (!response.ok) {
-                                throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-                            }
-
-                            const contentType = response.headers.get('content-type');
-                            if (!contentType || !contentType.includes('application/json')) {
-                                throw new Error(`Invalid content type: ${contentType}`);
+                                throw new Error(`HTTP error! status: ${response.status}`);
                             }
 
                             const data = await response.json();
                             
-                            // Validate response structure using type checking
-                            if (!data || typeof data !== 'object') {
-                                throw new Error('Invalid response: not an object');
-                            }
-                            
-                            if (!data.finance?.result?.[0]?.quotes || !Array.isArray(data.finance.result[0].quotes)) {
-                                throw new Error('Invalid API response structure: missing quotes array');
+                            if (!data.quotes || !Array.isArray(data.quotes)) {
+                                throw new Error('Invalid response format: missing quotes array');
                             }
 
-                            const quotes = data.finance.result[0].quotes;
-                            console.log(`Found ${quotes.length} total quotes`);
+                            // Process the symbols
+                            data.quotes.forEach(quote => {
+                                if (!quote.symbol) return;
+                                
+                                const symbol = quote.symbol.trim();
+                                if (symbol.length === 0) return;
 
-                            if (quotes.length === 0) {
-                                throw new Error('Empty quotes array received');
-                            }
+                                // Check if it's a valid equity type
+                                const isEquity = quote.quoteType === 'EQUITY' || 
+                                               quote.typeDisp === 'Equity' ||
+                                               quote.type === 'S';
+                                
+                                if (!isEquity) return;
 
-                            // Filter quotes based on the exchange with strict validation
-                            const filteredSymbols = quotes.filter(quote => {
-                                try {
-                                    if (!quote || typeof quote !== 'object') return false;
-                                    if (!quote.symbol || typeof quote.symbol !== 'string') return false;
+                                let shouldAdd = false;
+                                const exchange = quote.exchange || '';
+                                const market = quote.market || '';
+                                    
+                                switch (primaryMarket) {
+                                    case 'NSE':
+                                        shouldAdd = symbol.endsWith('.NS') && market === 'in_market';
+                                        break;
+                                    case 'BSE':
+                                        shouldAdd = symbol.endsWith('.BO') && market === 'in_market';
+                                        break;
+                                    case 'NYSE':
+                                        // NYSE stocks typically don't have a suffix and are on NYSE exchange
+                                        shouldAdd = (!symbol.includes('.') || symbol.endsWith('.N')) && 
+                                                  (exchange.toUpperCase().includes('NYSE') || market === 'us_market');
+                                        break;
+                                    case 'NASDAQ_EXCHANGE':
+                                        // NASDAQ stocks typically don't have a suffix and are on NASDAQ exchange
+                                        shouldAdd = (!symbol.includes('.') || symbol.endsWith('.O')) && 
+                                                  (exchange.toUpperCase().includes('NASDAQ') || market === 'us_market');
+                                        break;
+                                    case 'SNP500':
+                                        // S&P 500 stocks can be from either NYSE or NASDAQ
+                                        shouldAdd = (!symbol.includes('.') || symbol.endsWith('.N') || symbol.endsWith('.O')) && 
+                                                  market === 'us_market';
+                                        break;
+                                    case 'LSE':
+                                        shouldAdd = symbol.endsWith('.L') && market === 'gb_market';
+                                        break;
+                                    case 'TSE':
+                                        shouldAdd = symbol.endsWith('.T') && market === 'jp_market';
+                                        break;
+                                    case 'HKEX':
+                                        shouldAdd = symbol.endsWith('.HK') && market === 'hk_market';
+                                        break;
+                                    case 'DAX':
+                                        shouldAdd = symbol.endsWith('.DE') && market === 'de_market';
+                                        break;
+                                    default:
+                                        console.warn(`Unknown market: ${primaryMarket}`);
+                                        break;
+                                }
 
-                                    const symbol = quote.symbol.trim().toUpperCase();
-                                    if (symbol.length === 0) return false;
-
-                                    switch (primaryMarket) {
-                                        case 'BSE':
-                                            return symbol.endsWith('.BO') && symbol.length > 3;
-                                        case 'NSE':
-                                            return symbol.endsWith('.NS') && symbol.length > 3;
-                                        default:
-                                            return symbol && 
-                                                   quote.typeDisp === 'Equity' && 
-                                                   quote.exchange && 
-                                                   quote.market;
+                                if (shouldAdd) {
+                                    this.symbols.add(symbol);
+                                    if (this.symbols.size <= 5) {
+                                        console.log(`Added symbol: ${symbol} (Exchange: ${exchange}, Market: ${market})`);
                                     }
-                                } catch (e) {
-                                    console.warn('Error processing quote:', e);
-                                    return false;
                                 }
                             });
 
-                            console.log(`Filtered ${filteredSymbols.length} symbols for ${primaryMarket}`);
-
-                            if (filteredSymbols.length === 0) {
-                                throw new Error(`No valid symbols found for market: ${primaryMarket}`);
-                            }
-
-                            // Convert to Set with additional validation
-                            const validSymbols = filteredSymbols
-                                .map(quote => {
-                                    try {
-                                        const symbol = quote.symbol.trim().toUpperCase();
-                                        return symbol.length > 0 ? symbol : null;
-                                    } catch {
-                                        return null;
-                                    }
-                                })
-                                .filter(Boolean);
-
-                            this.symbols = new Set(validSymbols);
-
                             if (this.symbols.size === 0) {
-                                throw new Error('No valid symbols after final validation');
+                                console.error('Response data:', data);
+                                throw new Error(`No symbols found for ${primaryMarket}. Please check market configuration.`);
                             }
 
                             console.log(`Final symbol set size: ${this.symbols.size}`);
@@ -163,31 +159,20 @@ export class WatchlistUI {
                                 console.error('Request timed out');
                             }
 
+                            // If this was the last retry, throw the error
                             if (retryCount === maxRetries) {
-                                console.error('All retry attempts failed');
-                                console.error('Final error:', error);
-                                if (error.stack) {
-                                    console.error('Stack trace:', error.stack);
-                                }
-                            } else {
-                                const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
-                                console.log(`Retrying in ${delay}ms... (${maxRetries - retryCount} attempts remaining)`);
-                                await new Promise(r => setTimeout(r, delay));
+                                throw error;
                             }
 
-                            retryCount++;
+                            // Wait before retrying (exponential backoff)
+                            await new Promise(r => setTimeout(r, Math.pow(2, retryCount) * 1000));
                         }
                     }
 
-                    // If we exhausted all retries and still have no symbols, throw the last error
-                    if (this.symbols.size === 0 && lastError) {
-                        throw lastError;
-                    }
-
+                    resolve();
                 } catch (error) {
                     console.error('Fatal error in loadPrimaryMarketSymbols:', error);
                     this.symbols = new Set();
-                } finally {
                     resolve();
                 }
             });
